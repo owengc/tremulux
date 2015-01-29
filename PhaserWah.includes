@@ -1,0 +1,16 @@
+JuceLibraryCode
+JuceLibraryCode/modules/juce_audio_basics
+JuceLibraryCode/modules/juce_audio_devices
+JuceLibraryCode/modules/juce_audio_formats
+JuceLibraryCode/modules/juce_audio_plugin_client
+JuceLibraryCode/modules/juce_audio_processors
+JuceLibraryCode/modules/juce_core
+JuceLibraryCode/modules/juce_cryptography
+JuceLibraryCode/modules/juce_data_structures
+JuceLibraryCode/modules/juce_events
+JuceLibraryCode/modules/juce_graphics
+JuceLibraryCode/modules/juce_gui_basics
+JuceLibraryCode/modules/juce_gui_extra
+JuceLibraryCode/modules/juce_opengl
+JuceLibraryCode/modules/juce_video
+Source
