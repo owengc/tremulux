@@ -77,24 +77,28 @@ void PhaserWahAudioProcessor::setParameter (int index, float newValue)
         break;
     case BAND_WIDTH1:
         bandwidth[0] = newValue;
+        n[0].width(newValue*freq[0]);
         break;
     case BAND_FREQ2:
         freq[1] = newValue;
         break;
     case BAND_WIDTH2:
         bandwidth[1] = newValue;
+        n[1].width(newValue*freq[1]);
         break;
     case BAND_FREQ3:
         freq[2] = newValue;
         break;
     case BAND_WIDTH3:
         bandwidth[2] = newValue;
+        n[2].width(newValue*freq[2]);
         break;
     case BAND_FREQ4:
         freq[3] = newValue;
         break;
     case BAND_WIDTH4:
         bandwidth[3] = newValue;
+        n[3].width(newValue*freq[3]);
         break;
     case MOD_DEPTH:
         moddepth = newValue;
@@ -291,6 +295,7 @@ void PhaserWahAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     {
         float* outbuf = buffer.getWritePointer (channel);
         const float* inbuf = buffer.getReadPointer (channel);
+        modulator.freq(modfreq);
         float modsamp = modulator();
 
         for (int samp = 0; samp < buffer.getNumSamples(); samp++) {
