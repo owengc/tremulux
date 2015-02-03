@@ -12,21 +12,20 @@
 #define PLUGINPROCESSOR_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include <Gamma/Filter.h>
-#include <Gamma/Oscillator.h>
-
-using namespace gam;
-#define NUM_BANDS 4
+#include "Oscillator.h"
+const int numMods = 2;
 
 //==============================================================================
 /**
 */
-class PhaserWahAudioProcessor  : public AudioProcessor
-{
+
+
+
+class TremuluxAudioProcessor  : public AudioProcessor{
 public:
     //==============================================================================
-    PhaserWahAudioProcessor();
-    ~PhaserWahAudioProcessor();
+    TremuluxAudioProcessor();
+    ~TremuluxAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -70,32 +69,73 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     typedef enum {
-        BAND_FREQ1 = 0,
-        BAND_WIDTH1,
-        BAND_FREQ2,
-        BAND_WIDTH2,
-        BAND_FREQ3,
-        BAND_WIDTH3,
-        BAND_FREQ4,
-        BAND_WIDTH4,
-
-        MOD_DEPTH,
-        MOD_FREQ,
-
+        MOD_RATE1 = 0,
+        MOD_RATE_DIAL1,
+        MOD_DEPTH1,
+        MOD_SYNC_BUTTON1,
+        MOD_SYNC1,
+        
+        MOD_RATE2,
+        MOD_RATE_DIAL2,
+        MOD_DEPTH2,
+        MOD_SYNC_BUTTON2,
+        MOD_SYNC2,
+        
         MIX,
         NUM_PARAMS
     } PARAMS;
+    
+    typedef enum {
+        OFF = 0,
+        
+        TWO_BARS,
+        ONE_BAR,
+        HALF,
+        QUARTER,
+        EIGHTH,
+        SIXTEENTH,
+        DOTTED_QUARTER,
+        DOTTED_EIGHTH,
+        DOTTED_SIXTEENTH,
+        TRIPLET_QUARTER,
+        TRIPLET_EIGHTH,
+        TRIPLET_SIXTEENTH,
+        
+        NUM_SYNC_OPTIONS
+    } SYNC_OPTIONS;
+
+    const float freqDialRange = (NUM_SYNC_OPTIONS - 1) / 10.0;
+    
 private:
-
     float mix;
-    float freq[NUM_BANDS];
-    float bandwidth[NUM_BANDS];
-    float modfreq, moddepth;
-    Notch<> n[NUM_BANDS];
-    SineR<> modulator;
 
+    unsigned int modInterp;
+    float modRateDials[numMods];
+    float modRateTargets[numMods];
+    float modRates[numMods];
+    void updateSyncedRates(const bool force = false);
+    
+    const float oneOverFreqDialRange = 1.0 / freqDialRange;
+    const float minFreeRate = 0.1, maxFreeRate = 15.0;
+    float calcSyncedRate(const int mode, const int modID);
+    float calcRate(const float freqDialValue, const int modID);
+    
+    float modDepthTargets[numMods];
+
+    Wavetable<float> sineTable;
+    Oscillator<float> mods[numMods];
+    
+    AudioPlayHead *transport;
+    juce::AudioPlayHead::CurrentPositionInfo transportInfo;
+
+
+    float syncFactors[NUM_SYNC_OPTIONS];
+    unsigned int modSyncButtons[numMods];
+    SYNC_OPTIONS modSyncs[numMods];
+    float lastBPM;
+    unsigned int lastTimeSigDenominator, lastTimeSigNumerator;
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PhaserWahAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TremuluxAudioProcessor)
 };
 
 

@@ -36,51 +36,45 @@
                                                                     //[/Comments]
 */
 class PluginInterface  : public AudioProcessorEditor,
-                         public SliderListener
+                         public SliderListener,
+                         public ButtonListener
 {
 public:
     //==============================================================================
-    PluginInterface (PhaserWahAudioProcessor& p);
+    PluginInterface (TremuluxAudioProcessor& p);
     ~PluginInterface();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
+    void setRateDialRanges(const float max);
     //[/UserMethods]
 
     void paint (Graphics& g);
     void resized();
     void sliderValueChanged (Slider* sliderThatWasMoved);
+    void buttonClicked (Button* buttonThatWasClicked);
 
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-    PhaserWahAudioProcessor& processor;
+    TremuluxAudioProcessor& processor;
+    float lastUnsyncedFreqs[2];
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<Slider> freq1;
+    ScopedPointer<Slider> modRateDial1;
     ScopedPointer<Label> label;
-    ScopedPointer<Slider> width1;
+    ScopedPointer<Slider> modDepth1;
     ScopedPointer<Label> label2;
-    ScopedPointer<Slider> moddepth;
-    ScopedPointer<Label> label3;
-    ScopedPointer<Slider> modfreq;
-    ScopedPointer<Label> label4;
     ScopedPointer<Slider> mix;
     ScopedPointer<Label> label5;
-    ScopedPointer<Slider> freq2;
+    ScopedPointer<Slider> modRateDial2;
     ScopedPointer<Label> label6;
-    ScopedPointer<Slider> width2;
+    ScopedPointer<Slider> modDepth2;
     ScopedPointer<Label> label7;
-    ScopedPointer<Slider> freq3;
-    ScopedPointer<Label> label8;
-    ScopedPointer<Slider> width3;
-    ScopedPointer<Label> label9;
-    ScopedPointer<Slider> freq4;
-    ScopedPointer<Label> label10;
-    ScopedPointer<Slider> width4;
-    ScopedPointer<Label> label11;
+    ScopedPointer<ToggleButton> modSyncButton1;
+    ScopedPointer<ToggleButton> modSyncButton2;
 
 
     //==============================================================================
