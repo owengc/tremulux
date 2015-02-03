@@ -77,8 +77,12 @@ private:
     ScopedPointer<Label> label7;
     ScopedPointer<ToggleButton> modSyncButton1;
     ScopedPointer<ToggleButton> modSyncButton2;
-    ScopedPointer<Label> modFreqLabel1;
-    ScopedPointer<Label> modFreqLabel2;
+    ScopedPointer<Label> modFreqText1;
+    ScopedPointer<Label> modFreqText2;
+    ScopedPointer<Label> modDepthText1;
+    ScopedPointer<Label> modDepthText2;
+    ScopedPointer<Label> mixText;
+    Path internalPath1;
 
 
     //==============================================================================
