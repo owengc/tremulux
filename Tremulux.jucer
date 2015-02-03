@@ -12,7 +12,6 @@
   <MAINGROUP id="B1RSVG" name="Tremulux">
     <GROUP id="{95E9AEC1-4244-771A-2705-5F578DEECC3D}" name="AudioLibrary">
       <FILE id="eziClh" name="Oscillator.h" compile="1" resource="0" file="../../../../code/plugins/projects/smodels/Source/Oscillator.h"/>
-      <FILE id="xlk5Na" name="RingBuffer.h" compile="1" resource="0" file="../../../../code/plugins/projects/smodels/Source/RingBuffer.h"/>
     </GROUP>
     <GROUP id="{3A73246B-A72F-AD0F-5F91-18AE3E56E148}" name="Source">
       <FILE id="CbYr3n" name="PluginInterface.cpp" compile="1" resource="0"
