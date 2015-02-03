@@ -40,9 +40,10 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
 
     addAndMakeVisible (label = new Label ("new label",
                                           TRANS("Rate")));
-    label->setFont (Font (Font::getDefaultMonospacedFontName(), 15.00f, Font::plain));
+    label->setFont (Font (Font::getDefaultMonospacedFontName(), 16.00f, Font::plain));
     label->setJustificationType (Justification::centred);
     label->setEditable (false, false, false);
+    label->setColour (Label::textColourId, Colour (0xff401010));
     label->setColour (TextEditor::textColourId, Colours::black);
     label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -56,9 +57,10 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
 
     addAndMakeVisible (label2 = new Label ("new label",
                                            TRANS("Depth")));
-    label2->setFont (Font (Font::getDefaultMonospacedFontName(), 15.00f, Font::plain));
+    label2->setFont (Font (Font::getDefaultMonospacedFontName(), 16.00f, Font::plain));
     label2->setJustificationType (Justification::centred);
     label2->setEditable (false, false, false);
+    label2->setColour (Label::textColourId, Colour (0xff401010));
     label2->setColour (TextEditor::textColourId, Colours::black);
     label2->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -73,9 +75,10 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
 
     addAndMakeVisible (label5 = new Label ("new label",
                                            TRANS("Mix")));
-    label5->setFont (Font (Font::getDefaultMonospacedFontName(), 15.00f, Font::plain));
+    label5->setFont (Font (Font::getDefaultMonospacedFontName(), 16.00f, Font::plain));
     label5->setJustificationType (Justification::centred);
     label5->setEditable (false, false, false);
+    label5->setColour (Label::textColourId, Colour (0xff401010));
     label5->setColour (TextEditor::textColourId, Colours::black);
     label5->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -89,9 +92,10 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
 
     addAndMakeVisible (label6 = new Label ("new label",
                                            TRANS("Rate")));
-    label6->setFont (Font (Font::getDefaultMonospacedFontName(), 15.00f, Font::plain));
+    label6->setFont (Font (Font::getDefaultMonospacedFontName(), 16.00f, Font::plain));
     label6->setJustificationType (Justification::centred);
     label6->setEditable (false, false, false);
+    label6->setColour (Label::textColourId, Colour (0xff401010));
     label6->setColour (TextEditor::textColourId, Colours::black);
     label6->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -105,9 +109,10 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
 
     addAndMakeVisible (label7 = new Label ("new label",
                                            TRANS("Depth")));
-    label7->setFont (Font (Font::getDefaultMonospacedFontName(), 15.00f, Font::plain));
+    label7->setFont (Font (Font::getDefaultMonospacedFontName(), 16.00f, Font::plain));
     label7->setJustificationType (Justification::centred);
     label7->setEditable (false, false, false);
+    label7->setColour (Label::textColourId, Colour (0xff401010));
     label7->setColour (TextEditor::textColourId, Colours::black);
     label7->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -115,59 +120,66 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
     modSyncButton1->setButtonText (TRANS("Sync"));
     modSyncButton1->addListener (this);
     modSyncButton1->setToggleState (true, dontSendNotification);
+    modSyncButton1->setColour (ToggleButton::textColourId, Colour (0xff401010));
 
     addAndMakeVisible (modSyncButton2 = new ToggleButton ("new toggle button"));
     modSyncButton2->setButtonText (TRANS("Sync"));
     modSyncButton2->addListener (this);
     modSyncButton2->setToggleState (true, dontSendNotification);
+    modSyncButton2->setColour (ToggleButton::textColourId, Colour (0xff401010));
 
     addAndMakeVisible (modFreqText1 = new Label ("new label",
                                                  TRANS("Hello World")));
-    modFreqText1->setFont (Font (10.00f, Font::plain));
+    modFreqText1->setFont (Font (10.00f, Font::bold));
     modFreqText1->setJustificationType (Justification::centred);
     modFreqText1->setEditable (false, false, false);
     modFreqText1->setColour (Label::backgroundColourId, Colours::white);
-    modFreqText1->setColour (Label::outlineColourId, Colours::grey);
+    modFreqText1->setColour (Label::textColourId, Colour (0xff401010));
+    modFreqText1->setColour (Label::outlineColourId, Colour (0xff401010));
     modFreqText1->setColour (TextEditor::textColourId, Colours::black);
     modFreqText1->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (modFreqText2 = new Label ("new label",
                                                  TRANS("Hello World")));
-    modFreqText2->setFont (Font (10.00f, Font::plain));
+    modFreqText2->setFont (Font (10.00f, Font::bold));
     modFreqText2->setJustificationType (Justification::centred);
     modFreqText2->setEditable (false, false, false);
     modFreqText2->setColour (Label::backgroundColourId, Colours::white);
-    modFreqText2->setColour (Label::outlineColourId, Colours::grey);
+    modFreqText2->setColour (Label::textColourId, Colour (0xff401010));
+    modFreqText2->setColour (Label::outlineColourId, Colour (0xff401010));
     modFreqText2->setColour (TextEditor::textColourId, Colours::black);
     modFreqText2->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (modDepthText1 = new Label ("new label",
                                                   TRANS("Hello World")));
-    modDepthText1->setFont (Font (10.00f, Font::plain));
+    modDepthText1->setFont (Font (10.00f, Font::bold));
     modDepthText1->setJustificationType (Justification::centred);
     modDepthText1->setEditable (false, false, false);
     modDepthText1->setColour (Label::backgroundColourId, Colours::white);
-    modDepthText1->setColour (Label::outlineColourId, Colours::grey);
+    modDepthText1->setColour (Label::textColourId, Colour (0xff401010));
+    modDepthText1->setColour (Label::outlineColourId, Colour (0xff401010));
     modDepthText1->setColour (TextEditor::textColourId, Colours::black);
     modDepthText1->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (modDepthText2 = new Label ("new label",
                                                   TRANS("Hello World")));
-    modDepthText2->setFont (Font (10.00f, Font::plain));
+    modDepthText2->setFont (Font (10.00f, Font::bold));
     modDepthText2->setJustificationType (Justification::centred);
     modDepthText2->setEditable (false, false, false);
     modDepthText2->setColour (Label::backgroundColourId, Colours::white);
-    modDepthText2->setColour (Label::outlineColourId, Colours::grey);
+    modDepthText2->setColour (Label::textColourId, Colour (0xff401010));
+    modDepthText2->setColour (Label::outlineColourId, Colour (0xff401010));
     modDepthText2->setColour (TextEditor::textColourId, Colours::black);
     modDepthText2->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (mixText = new Label ("new label",
                                             TRANS("Hello World")));
-    mixText->setFont (Font (10.00f, Font::plain));
+    mixText->setFont (Font (10.00f, Font::bold));
     mixText->setJustificationType (Justification::centred);
     mixText->setEditable (false, false, false);
     mixText->setColour (Label::backgroundColourId, Colours::white);
-    mixText->setColour (Label::outlineColourId, Colours::grey);
+    mixText->setColour (Label::textColourId, Colour (0xff401010));
+    mixText->setColour (Label::outlineColourId, Colour (0xff401010));
     mixText->setColour (TextEditor::textColourId, Colours::black);
     mixText->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -510,8 +522,11 @@ void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
     else if (sliderThatWasMoved == mix)
     {
         //[UserSliderCode_mix] -- add your slider handling code here..
+        float mixDialValue = sliderThatWasMoved->getValue();
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MIX,
-                                            sliderThatWasMoved->getValue());
+                                            mixDialValue);
+        displayText = String(mixDialValue, 2);
+        mixText->setText(displayText, juce::NotificationType::sendNotification);
         //[/UserSliderCode_mix]
     }
     else if (sliderThatWasMoved == modRateDial2)
@@ -644,9 +659,10 @@ BEGIN_JUCER_METADATA
   <LABEL name="new label" id="55db614b1ede7601" memberName="label" virtualName=""
          explicitFocusOrder="0" pos="0 72 100% 24" posRelativeX="6f801a8b6732fcf6"
          posRelativeY="6f801a8b6732fcf6" posRelativeW="6f801a8b6732fcf6"
-         edTextCol="ff000000" edBkgCol="0" labelText="Rate" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default monospaced font"
-         fontsize="15" bold="0" italic="0" justification="36"/>
+         textCol="ff401010" edTextCol="ff000000" edBkgCol="0" labelText="Rate"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default monospaced font" fontsize="16" bold="0" italic="0"
+         justification="36"/>
   <SLIDER name="new slider" id="ef41dbafc2b42ab0" memberName="modDepth1"
           virtualName="" explicitFocusOrder="0" pos="72 0 100% 100%" posRelativeX="6f801a8b6732fcf6"
           posRelativeY="6f801a8b6732fcf6" posRelativeW="6f801a8b6732fcf6"
@@ -656,9 +672,10 @@ BEGIN_JUCER_METADATA
   <LABEL name="new label" id="d9460c7a1c6e8f0b" memberName="label2" virtualName=""
          explicitFocusOrder="0" pos="0 72 100% 24" posRelativeX="ef41dbafc2b42ab0"
          posRelativeY="ef41dbafc2b42ab0" posRelativeW="ef41dbafc2b42ab0"
-         edTextCol="ff000000" edBkgCol="0" labelText="Depth" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default monospaced font"
-         fontsize="15" bold="0" italic="0" justification="36"/>
+         textCol="ff401010" edTextCol="ff000000" edBkgCol="0" labelText="Depth"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default monospaced font" fontsize="16" bold="0" italic="0"
+         justification="36"/>
   <SLIDER name="new slider" id="eb5c080c6c96c98c" memberName="mix" virtualName=""
           explicitFocusOrder="0" pos="248 176 64 64" trackcol="ffffe4c4"
           rotarysliderfill="ff401010" rotaryslideroutline="ff401010" min="0"
@@ -667,9 +684,10 @@ BEGIN_JUCER_METADATA
   <LABEL name="new label" id="4424775d4d900f55" memberName="label5" virtualName=""
          explicitFocusOrder="0" pos="0 80 100% 24" posRelativeX="eb5c080c6c96c98c"
          posRelativeY="eb5c080c6c96c98c" posRelativeW="eb5c080c6c96c98c"
-         edTextCol="ff000000" edBkgCol="0" labelText="Mix" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default monospaced font"
-         fontsize="15" bold="0" italic="0" justification="36"/>
+         textCol="ff401010" edTextCol="ff000000" edBkgCol="0" labelText="Mix"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default monospaced font" fontsize="16" bold="0" italic="0"
+         justification="36"/>
   <SLIDER name="new slider" id="ec1ad9429a64df37" memberName="modRateDial2"
           virtualName="" explicitFocusOrder="0" pos="24 240 56 56" rotarysliderfill="ff401010"
           rotaryslideroutline="ff401010" min="0" max="100" int="0" style="Rotary"
@@ -678,9 +696,10 @@ BEGIN_JUCER_METADATA
   <LABEL name="new label" id="75705ee4a87a546f" memberName="label6" virtualName=""
          explicitFocusOrder="0" pos="0 72 100% 24" posRelativeX="ec1ad9429a64df37"
          posRelativeY="ec1ad9429a64df37" posRelativeW="6f801a8b6732fcf6"
-         edTextCol="ff000000" edBkgCol="0" labelText="Rate" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default monospaced font"
-         fontsize="15" bold="0" italic="0" justification="36"/>
+         textCol="ff401010" edTextCol="ff000000" edBkgCol="0" labelText="Rate"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default monospaced font" fontsize="16" bold="0" italic="0"
+         justification="36"/>
   <SLIDER name="new slider" id="f1fb1887848bb254" memberName="modDepth2"
           virtualName="" explicitFocusOrder="0" pos="72 0 100% 100%" posRelativeX="ec1ad9429a64df37"
           posRelativeY="ec1ad9429a64df37" posRelativeW="ec1ad9429a64df37"
@@ -690,54 +709,55 @@ BEGIN_JUCER_METADATA
   <LABEL name="new label" id="fe72734cb4e58011" memberName="label7" virtualName=""
          explicitFocusOrder="0" pos="0 72 100% 24" posRelativeX="f1fb1887848bb254"
          posRelativeY="f1fb1887848bb254" posRelativeW="f1fb1887848bb254"
-         edTextCol="ff000000" edBkgCol="0" labelText="Depth" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default monospaced font"
-         fontsize="15" bold="0" italic="0" justification="36"/>
+         textCol="ff401010" edTextCol="ff000000" edBkgCol="0" labelText="Depth"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default monospaced font" fontsize="16" bold="0" italic="0"
+         justification="36"/>
   <TOGGLEBUTTON name="new toggle button" id="918a6ddd08824de" memberName="modSyncButton1"
                 virtualName="" explicitFocusOrder="0" pos="72 24 100% 50%" posRelativeX="ef41dbafc2b42ab0"
                 posRelativeY="6f801a8b6732fcf6" posRelativeW="6f801a8b6732fcf6"
-                posRelativeH="6f801a8b6732fcf6" buttonText="Sync" connectedEdges="0"
-                needsCallback="1" radioGroupId="0" state="1"/>
+                posRelativeH="6f801a8b6732fcf6" txtcol="ff401010" buttonText="Sync"
+                connectedEdges="0" needsCallback="1" radioGroupId="0" state="1"/>
   <TOGGLEBUTTON name="new toggle button" id="b200103104a767ac" memberName="modSyncButton2"
                 virtualName="" explicitFocusOrder="0" pos="72 24 100% 50%" posRelativeX="f1fb1887848bb254"
                 posRelativeY="ec1ad9429a64df37" posRelativeW="ec1ad9429a64df37"
-                posRelativeH="ec1ad9429a64df37" buttonText="Sync" connectedEdges="0"
-                needsCallback="1" radioGroupId="0" state="1"/>
+                posRelativeH="ec1ad9429a64df37" txtcol="ff401010" buttonText="Sync"
+                connectedEdges="0" needsCallback="1" radioGroupId="0" state="1"/>
   <LABEL name="new label" id="a734cb7cd6d90437" memberName="modFreqText1"
          virtualName="" explicitFocusOrder="0" pos="0 56 100% 20" posRelativeX="6f801a8b6732fcf6"
          posRelativeY="6f801a8b6732fcf6" posRelativeW="6f801a8b6732fcf6"
-         bkgCol="ffffffff" outlineCol="ff808080" edTextCol="ff000000"
+         bkgCol="ffffffff" textCol="ff401010" outlineCol="ff401010" edTextCol="ff000000"
          edBkgCol="0" labelText="Hello World" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="10" bold="0" italic="0" justification="36"/>
+         fontsize="10" bold="1" italic="0" justification="36"/>
   <LABEL name="new label" id="ee16f8f0ca36b4a1" memberName="modFreqText2"
          virtualName="" explicitFocusOrder="0" pos="0 56 100% 20" posRelativeX="ec1ad9429a64df37"
          posRelativeY="ec1ad9429a64df37" posRelativeW="ec1ad9429a64df37"
-         bkgCol="ffffffff" outlineCol="ff808080" edTextCol="ff000000"
+         bkgCol="ffffffff" textCol="ff401010" outlineCol="ff401010" edTextCol="ff000000"
          edBkgCol="0" labelText="Hello World" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="10" bold="0" italic="0" justification="36"/>
+         fontsize="10" bold="1" italic="0" justification="36"/>
   <LABEL name="new label" id="e7b93ca1af9ac83d" memberName="modDepthText1"
          virtualName="" explicitFocusOrder="0" pos="0 56 100% 20" posRelativeX="ef41dbafc2b42ab0"
          posRelativeY="ef41dbafc2b42ab0" posRelativeW="ef41dbafc2b42ab0"
-         bkgCol="ffffffff" outlineCol="ff808080" edTextCol="ff000000"
+         bkgCol="ffffffff" textCol="ff401010" outlineCol="ff401010" edTextCol="ff000000"
          edBkgCol="0" labelText="Hello World" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="10" bold="0" italic="0" justification="36"/>
+         fontsize="10" bold="1" italic="0" justification="36"/>
   <LABEL name="new label" id="433681df1094f408" memberName="modDepthText2"
          virtualName="" explicitFocusOrder="0" pos="0 56 100% 20" posRelativeX="f1fb1887848bb254"
          posRelativeY="f1fb1887848bb254" posRelativeW="f1fb1887848bb254"
-         bkgCol="ffffffff" outlineCol="ff808080" edTextCol="ff000000"
+         bkgCol="ffffffff" textCol="ff401010" outlineCol="ff401010" edTextCol="ff000000"
          edBkgCol="0" labelText="Hello World" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="10" bold="0" italic="0" justification="36"/>
+         fontsize="10" bold="1" italic="0" justification="36"/>
   <LABEL name="new label" id="c504412f027cb9de" memberName="mixText" virtualName=""
          explicitFocusOrder="0" pos="0 64 100% 20" posRelativeX="eb5c080c6c96c98c"
          posRelativeY="eb5c080c6c96c98c" posRelativeW="eb5c080c6c96c98c"
-         bkgCol="ffffffff" outlineCol="ff808080" edTextCol="ff000000"
+         bkgCol="ffffffff" textCol="ff401010" outlineCol="ff401010" edTextCol="ff000000"
          edBkgCol="0" labelText="Hello World" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="10" bold="0" italic="0" justification="36"/>
+         fontsize="10" bold="1" italic="0" justification="36"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
