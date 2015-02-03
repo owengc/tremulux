@@ -181,7 +181,22 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
     syncModeLabels.add("Dotted 1/16");
     syncModeLabels.add("1/16");
     syncModeLabels.add("1/16 Triplet");
-
+    
+    modRateDial1->setValue(lastSyncedFreqs[0]);
+    sliderValueChanged(modRateDial1);
+    modDepth1->setValue(0.25);
+    sliderValueChanged(modDepth1);
+    modRateDial2->setValue(lastSyncedFreqs[1]);
+    sliderValueChanged(modRateDial2);
+    modDepth2->setValue(0.25);
+    sliderValueChanged(modDepth2);
+    mix->setValue(0.5);
+    sliderValueChanged(mix);
+    modSyncButton1->setToggleState(true, juce::NotificationType::sendNotification);
+    buttonClicked(modSyncButton1);
+    modSyncButton2->setToggleState(true, juce::NotificationType::sendNotification);
+    buttonClicked(modSyncButton2);
+    
     //[/Constructor]
 }
 
@@ -257,8 +272,8 @@ void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
         int mode = 0, currentlySynced = modSyncButton1->getToggleState();
         if(currentlySynced){
             //sync activated, quantize value
-            mode = (int)(sliderThatWasMoved->getValue() * 10) + 1;
-            sliderThatWasMoved->setValue(mode * 0.1);
+            mode = (int)sliderThatWasMoved->getValue();
+            sliderThatWasMoved->setValue(mode);
         }
         float freqDialValue = sliderThatWasMoved->getValue();
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_SYNC1, mode);
@@ -289,8 +304,8 @@ void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
         int mode = 0, currentlySynced = modSyncButton2->getToggleState();
         if(modSyncButton2->getToggleState()){
             //sync activated, quantize value
-            mode = (int)(sliderThatWasMoved->getValue() * 10);
-            sliderThatWasMoved->setValue(mode * 0.1);
+            mode = (int)sliderThatWasMoved->getValue();
+            sliderThatWasMoved->setValue(mode);
         }
         float freqDialValue = sliderThatWasMoved->getValue();
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_SYNC2, mode);
@@ -327,8 +342,10 @@ void PluginInterface::buttonClicked (Button* buttonThatWasClicked)
                                             currentlySynced);
         if(currentlySynced){
             lastUnsyncedFreqs[0] = modRateDial1->getValue();
+            modRateDial1->setValue(lastSyncedFreqs[0]);
         }
         else{
+            lastSyncedFreqs[0] = modRateDial1->getValue();
             modRateDial1->setValue(lastUnsyncedFreqs[0]);
         }
         sliderValueChanged(modRateDial1);
@@ -340,10 +357,12 @@ void PluginInterface::buttonClicked (Button* buttonThatWasClicked)
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_SYNC_BUTTON2,
                                             currentlySynced);
         if(currentlySynced){
-            lastUnsyncedFreqs[0] = modRateDial1->getValue();
+            lastUnsyncedFreqs[1] = modRateDial2->getValue();
+            modRateDial2->setValue(lastSyncedFreqs[1]);
         }
         else{
-            modRateDial1->setValue(lastUnsyncedFreqs[0]);
+            lastSyncedFreqs[1] = modRateDial2->getValue();
+            modRateDial2->setValue(lastUnsyncedFreqs[1]);
         }
         sliderValueChanged(modRateDial2);
         //[/UserButtonCode_modSyncButton2]
@@ -357,8 +376,8 @@ void PluginInterface::buttonClicked (Button* buttonThatWasClicked)
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void PluginInterface::setRateDialRanges(const float max){
-    modRateDial1->setRange (0.1, max, 0);
-    modRateDial2->setRange (0.1, max, 0);
+    modRateDial1->setRange (1.0, max, 0);
+    modRateDial2->setRange (1.0, max, 0);
 }
 //[/MiscUserCode]
 

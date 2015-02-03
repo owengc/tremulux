@@ -59,7 +59,8 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     TremuluxAudioProcessor& processor;
-    float lastUnsyncedFreqs[2]{0.1};
+    float lastUnsyncedFreqs[2]{0.1, 0.1};
+    float lastSyncedFreqs[2]{5.0, 8.0};
     StringArray syncModeLabels;
     //[/UserVariables]
 

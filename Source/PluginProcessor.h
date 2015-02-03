@@ -104,7 +104,7 @@ public:
         NUM_SYNC_OPTIONS
     } SYNC_OPTIONS;
 
-    const float freqDialRange = (NUM_SYNC_OPTIONS - 1) / 10.0;
+    const float freqDialRange = NUM_SYNC_OPTIONS - 1;
     const float oneOverFreqDialRange = 1.0 / freqDialRange;
     const float minFreeRate = 0.1, maxFreeRate = 20.0;
     
