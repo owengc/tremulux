@@ -100,18 +100,18 @@ float TremuluxAudioProcessor::getParameter (int index)
     switch(p){
         case MOD_DEPTH1:
             return modDepthTargets[0];
-        case MOD_DEPTH2:
-            return modDepthTargets[1];
-        case MOD_RATE1:
-            return modRateTargets[0];
         case MOD_RATE_DIAL1:
             return modRateDials[0];
-        case MOD_RATE2:
-            return modRateTargets[1];
-        case MOD_RATE_DIAL2:
-            return modRateDials[1];
+        case MOD_RATE1:
+            return modRateTargets[0];
         case MOD_SYNC1:
             return modSyncs[0];
+        case MOD_DEPTH2:
+            return modDepthTargets[1];
+        case MOD_RATE_DIAL2:
+            return modRateDials[1];
+        case MOD_RATE2:
+            return modRateTargets[1];
         case MOD_SYNC2:
             return modSyncs[1];
         case MIX:
@@ -129,10 +129,6 @@ void TremuluxAudioProcessor::setParameter (int index, float newValue)
             modDepthTargets[0] = newValue;
             mods[0].updateAmp(newValue, modInterp);
             break;
-        case MOD_DEPTH2:// [0.0, 1.0]
-            modDepthTargets[1] = newValue;
-            mods[0].updateAmp(newValue, modInterp);
-            break;
         case MOD_RATE_DIAL1:// [0.1, 1.2]
             modRateDials[0] = newValue;
             setParameterNotifyingHost(TremuluxAudioProcessor::MOD_RATE1, calcRate(newValue, 0));
@@ -142,6 +138,17 @@ void TremuluxAudioProcessor::setParameter (int index, float newValue)
             modRateTargets[0] = newValue;
             mods[0].updateFreq(newValue, modInterp);
             break;
+        case MOD_SYNC_BUTTON1:// 0.0 or 1.0
+            modSyncButtons[0] = (int)newValue;
+            break;
+        case MOD_SYNC1:// SYNC_OPTIONS
+            // Only called when MOD_SYNC_BUTTON1 or MOD_RATE_DIAL1 changes
+            modSyncs[0] = (SYNC_OPTIONS)newValue;
+            break;
+        case MOD_DEPTH2:// [0.0, 1.0]
+            modDepthTargets[1] = newValue;
+            mods[1].updateAmp(newValue, modInterp);
+            break;
         case MOD_RATE_DIAL2:// [0.1, 1.2]
             modRateDials[1] = newValue;
             setParameterNotifyingHost(TremuluxAudioProcessor::MOD_RATE2, calcRate(newValue, 1));
@@ -149,14 +156,7 @@ void TremuluxAudioProcessor::setParameter (int index, float newValue)
         case MOD_RATE2:
             // Only called when MOD_RATE_DIAL1 changes, should receive Hz value
             modRateTargets[1] = newValue;
-            mods[0].updateFreq(newValue, modInterp);
-            break;
-        case MOD_SYNC_BUTTON1:// 0.0 or 1.0
-            modSyncButtons[0] = (int)newValue;
-            break;
-        case MOD_SYNC1:// SYNC_OPTIONS
-            // Only called when MOD_SYNC_BUTTON1 or MOD_RATE_DIAL1 changes
-            modSyncs[0] = (SYNC_OPTIONS)newValue;
+            mods[1].updateFreq(newValue, modInterp);
             break;
         case MOD_SYNC_BUTTON2:// 0.0 or 1.0
             modSyncButtons[1] = (int)newValue;
@@ -301,13 +301,12 @@ void TremuluxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer
             float in = *inData++;
             float out = in;
             for(int m = 0; m < numMods; m++){//testing
-                out *= (1 + mods[m].next());
+                out *= (1 + mods[m].next() * 0.5);
                 
-                // This are here to keep updateRates informed
+                // This is here to keep updateRates informed
                 modRates[m] = mods[m].getFrequency();
             }
-            *outData++ = out;
-            //            *outData++ = mix * out + (1.0 - mix) * in;
+            *outData++ = mix * out + (1.0 - mix) * in;
         }
     }
 }
