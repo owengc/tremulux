@@ -105,6 +105,8 @@ public:
     } SYNC_OPTIONS;
 
     const float freqDialRange = (NUM_SYNC_OPTIONS - 1) / 10.0;
+    const float oneOverFreqDialRange = 1.0 / freqDialRange;
+    const float minFreeRate = 0.1, maxFreeRate = 20.0;
     
 private:
     float mix;
@@ -115,8 +117,7 @@ private:
     float modRates[numMods];
     void updateSyncedRates(const bool force = false);
     
-    const float oneOverFreqDialRange = 1.0 / freqDialRange;
-    const float minFreeRate = 0.1, maxFreeRate = 15.0;
+
     float calcSyncedRate(const int mode, const int modID);
     float calcRate(const float freqDialValue, const int modID);
     

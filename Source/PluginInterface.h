@@ -60,6 +60,7 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     TremuluxAudioProcessor& processor;
     float lastUnsyncedFreqs[2]{0.1};
+    StringArray syncModeLabels;
     //[/UserVariables]
 
     //==============================================================================
@@ -75,8 +76,8 @@ private:
     ScopedPointer<Label> label7;
     ScopedPointer<ToggleButton> modSyncButton1;
     ScopedPointer<ToggleButton> modSyncButton2;
-    ScopedPointer<Label> label3;
-    ScopedPointer<Label> label4;
+    ScopedPointer<Label> modFreqLabel1;
+    ScopedPointer<Label> modFreqLabel2;
 
 
     //==============================================================================

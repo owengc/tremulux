@@ -121,25 +121,25 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
     modSyncButton2->addListener (this);
     modSyncButton2->setToggleState (true, dontSendNotification);
 
-    addAndMakeVisible (label3 = new Label ("new label",
-                                           TRANS("Hello World")));
-    label3->setFont (Font (10.00f, Font::plain));
-    label3->setJustificationType (Justification::centred);
-    label3->setEditable (false, false, false);
-    label3->setColour (Label::backgroundColourId, Colours::white);
-    label3->setColour (Label::outlineColourId, Colours::grey);
-    label3->setColour (TextEditor::textColourId, Colours::black);
-    label3->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+    addAndMakeVisible (modFreqLabel1 = new Label ("new label",
+                                                  TRANS("Hello World")));
+    modFreqLabel1->setFont (Font (10.00f, Font::plain));
+    modFreqLabel1->setJustificationType (Justification::centred);
+    modFreqLabel1->setEditable (false, false, false);
+    modFreqLabel1->setColour (Label::backgroundColourId, Colours::white);
+    modFreqLabel1->setColour (Label::outlineColourId, Colours::grey);
+    modFreqLabel1->setColour (TextEditor::textColourId, Colours::black);
+    modFreqLabel1->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    addAndMakeVisible (label4 = new Label ("new label",
-                                           TRANS("Hello World")));
-    label4->setFont (Font (10.00f, Font::plain));
-    label4->setJustificationType (Justification::centred);
-    label4->setEditable (false, false, false);
-    label4->setColour (Label::backgroundColourId, Colours::white);
-    label4->setColour (Label::outlineColourId, Colours::grey);
-    label4->setColour (TextEditor::textColourId, Colours::black);
-    label4->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+    addAndMakeVisible (modFreqLabel2 = new Label ("new label",
+                                                  TRANS("Hello World")));
+    modFreqLabel2->setFont (Font (10.00f, Font::plain));
+    modFreqLabel2->setJustificationType (Justification::centred);
+    modFreqLabel2->setEditable (false, false, false);
+    modFreqLabel2->setColour (Label::backgroundColourId, Colours::white);
+    modFreqLabel2->setColour (Label::outlineColourId, Colours::grey);
+    modFreqLabel2->setColour (TextEditor::textColourId, Colours::black);
+    modFreqLabel2->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
 
     //[UserPreSize]
@@ -150,6 +150,38 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
 
     //[Constructor] You can add your own custom stuff here..
     setRateDialRanges(processor.freqDialRange);
+    /*typedef enum {
+     OFF = 0,
+
+     TWO_BARS,
+     ONE_BAR,
+     HALF,
+     DOTTED_QUARTER,
+     QUARTER,
+     TRIPLET_QUARTER,
+     DOTTED_EIGHTH,
+     EIGHTH,
+     TRIPLET_EIGHTH,
+     DOTTED_SIXTEENTH,
+     SIXTEENTH,
+     TRIPLET_SIXTEENTH,
+
+     NUM_SYNC_OPTIONS
+     } SYNC_OPTIONS;*/
+    syncModeLabels.add("NULL");
+    syncModeLabels.add("Two Bars");
+    syncModeLabels.add("One Bar");
+    syncModeLabels.add("1/2");
+    syncModeLabels.add("Dotted 1/4");
+    syncModeLabels.add("1/4");
+    syncModeLabels.add("1/4 Triplet");
+    syncModeLabels.add("Dotted 1/8");
+    syncModeLabels.add("1/8");
+    syncModeLabels.add("1/8 Triplet");
+    syncModeLabels.add("Dotted 1/16");
+    syncModeLabels.add("1/16");
+    syncModeLabels.add("1/16 Triplet");
+
     //[/Constructor]
 }
 
@@ -170,8 +202,8 @@ PluginInterface::~PluginInterface()
     label7 = nullptr;
     modSyncButton1 = nullptr;
     modSyncButton2 = nullptr;
-    label3 = nullptr;
-    label4 = nullptr;
+    modFreqLabel1 = nullptr;
+    modFreqLabel2 = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -207,8 +239,8 @@ void PluginInterface::resized()
     label7->setBounds ((72 + 0) + 0, 157, roundFloatToInt ((roundFloatToInt (49 * 1.0000f)) * 1.0000f), 24);
     modSyncButton1->setBounds (8 + 0, 192, roundFloatToInt (49 * 1.0000f), 24);
     modSyncButton2->setBounds (72 + 0, 192, roundFloatToInt (49 * 1.0000f), 24);
-    label3->setBounds (8 + 0, 56, roundFloatToInt (49 * 1.0000f), 20);
-    label4->setBounds (72 + 0, 56, roundFloatToInt (49 * 1.0000f), 20);
+    modFreqLabel1->setBounds (8 + 0, 56, roundFloatToInt (49 * 1.0000f), 20);
+    modFreqLabel2->setBounds (72 + 0, 56, roundFloatToInt (49 * 1.0000f), 20);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -216,21 +248,25 @@ void PluginInterface::resized()
 void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
 {
     //[UsersliderValueChanged_Pre]
+    String displayText;
     //[/UsersliderValueChanged_Pre]
 
     if (sliderThatWasMoved == modRateDial1)
     {
         //[UserSliderCode_modRateDial1] -- add your slider handling code here..
-        int mode = 0;
-        if(modSyncButton1->getToggleState()){
+        int mode = 0, currentlySynced = modSyncButton1->getToggleState();
+        if(currentlySynced){
             //sync activated, quantize value
-            mode = (int)(sliderThatWasMoved->getValue() * 10);
+            mode = (int)(sliderThatWasMoved->getValue() * 10) + 1;
             sliderThatWasMoved->setValue(mode * 0.1);
         }
+        float freqDialValue = sliderThatWasMoved->getValue();
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_SYNC1, mode);
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_RATE_DIAL1,
-                                            sliderThatWasMoved->getValue());
-
+                                            freqDialValue);
+        displayText = (currentlySynced)?syncModeLabels.getReference(mode):
+        String(processor.minFreeRate + (freqDialValue * processor.oneOverFreqDialRange) * (processor.maxFreeRate - processor.minFreeRate), 2) + " Hz";
+        modFreqLabel1->setText(displayText, juce::NotificationType::sendNotification);
         //[/UserSliderCode_modRateDial1]
     }
     else if (sliderThatWasMoved == modDepth1)
@@ -250,15 +286,19 @@ void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
     else if (sliderThatWasMoved == modRateDial2)
     {
         //[UserSliderCode_modRateDial2] -- add your slider handling code here..
-        int mode = 0;
+        int mode = 0, currentlySynced = modSyncButton2->getToggleState();
         if(modSyncButton2->getToggleState()){
             //sync activated, quantize value
             mode = (int)(sliderThatWasMoved->getValue() * 10);
             sliderThatWasMoved->setValue(mode * 0.1);
         }
+        float freqDialValue = sliderThatWasMoved->getValue();
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_SYNC2, mode);
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_RATE_DIAL2,
-                                            sliderThatWasMoved->getValue());
+                                            freqDialValue);
+        displayText = (currentlySynced)?syncModeLabels.getReference(mode):
+        String(processor.minFreeRate + (freqDialValue * processor.oneOverFreqDialRange) * (processor.maxFreeRate - processor.minFreeRate), 2) + " Hz";
+        modFreqLabel2->setText(displayText, juce::NotificationType::sendNotification);
 
         //[/UserSliderCode_modRateDial2]
     }
@@ -277,16 +317,15 @@ void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
 void PluginInterface::buttonClicked (Button* buttonThatWasClicked)
 {
     //[UserbuttonClicked_Pre]
-    //TODO: reset to cached unsynced value if button is untoggled
+    const int currentlySynced = buttonThatWasClicked->getToggleState();
     //[/UserbuttonClicked_Pre]
 
     if (buttonThatWasClicked == modSyncButton1)
     {
         //[UserButtonCode_modSyncButton1] -- add your button handler code here..
-        const int toggleState = buttonThatWasClicked->getToggleState();
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_SYNC_BUTTON1,
-                                            toggleState);
-        if(toggleState){
+                                            currentlySynced);
+        if(currentlySynced){
             lastUnsyncedFreqs[0] = modRateDial1->getValue();
         }
         else{
@@ -298,10 +337,9 @@ void PluginInterface::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == modSyncButton2)
     {
         //[UserButtonCode_modSyncButton2] -- add your button handler code here..
-        const int toggleState = buttonThatWasClicked->getToggleState();
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_SYNC_BUTTON2,
-                                            toggleState);
-        if(toggleState){
+                                            currentlySynced);
+        if(currentlySynced){
             lastUnsyncedFreqs[0] = modRateDial1->getValue();
         }
         else{
@@ -407,14 +445,14 @@ BEGIN_JUCER_METADATA
                 posRelativeW="ec1ad9429a64df37" posRelativeH="ec1ad9429a64df37"
                 buttonText="Sync" connectedEdges="0" needsCallback="1" radioGroupId="0"
                 state="1"/>
-  <LABEL name="new label" id="a734cb7cd6d90437" memberName="label3" virtualName=""
-         explicitFocusOrder="0" pos="0 56 100% 20" posRelativeX="6f801a8b6732fcf6"
+  <LABEL name="new label" id="a734cb7cd6d90437" memberName="modFreqLabel1"
+         virtualName="" explicitFocusOrder="0" pos="0 56 100% 20" posRelativeX="6f801a8b6732fcf6"
          posRelativeW="6f801a8b6732fcf6" bkgCol="ffffffff" outlineCol="ff808080"
          edTextCol="ff000000" edBkgCol="0" labelText="Hello World" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="10" bold="0" italic="0" justification="36"/>
-  <LABEL name="new label" id="ee16f8f0ca36b4a1" memberName="label4" virtualName=""
-         explicitFocusOrder="0" pos="0 56 100% 20" posRelativeX="ec1ad9429a64df37"
+  <LABEL name="new label" id="ee16f8f0ca36b4a1" memberName="modFreqLabel2"
+         virtualName="" explicitFocusOrder="0" pos="0 56 100% 20" posRelativeX="ec1ad9429a64df37"
          posRelativeW="ec1ad9429a64df37" bkgCol="ffffffff" outlineCol="ff808080"
          edTextCol="ff000000" edBkgCol="0" labelText="Hello World" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"

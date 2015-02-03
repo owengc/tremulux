@@ -103,11 +103,11 @@ float TremuluxAudioProcessor::getParameter (int index)
         case MOD_DEPTH2:
             return modDepthTargets[1];
         case MOD_RATE1:
-            return modRates[0];
+            return modRateTargets[0];
         case MOD_RATE_DIAL1:
             return modRateDials[0];
         case MOD_RATE2:
-            return modRates[1];
+            return modRateTargets[1];
         case MOD_RATE_DIAL2:
             return modRateDials[1];
         case MOD_SYNC1:
