@@ -119,13 +119,11 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
     addAndMakeVisible (modSyncButton1 = new ToggleButton ("new toggle button"));
     modSyncButton1->setButtonText (TRANS("Sync"));
     modSyncButton1->addListener (this);
-    modSyncButton1->setToggleState (true, dontSendNotification);
     modSyncButton1->setColour (ToggleButton::textColourId, Colour (0xff401010));
 
     addAndMakeVisible (modSyncButton2 = new ToggleButton ("new toggle button"));
     modSyncButton2->setButtonText (TRANS("Sync"));
     modSyncButton2->addListener (this);
-    modSyncButton2->setToggleState (true, dontSendNotification);
     modSyncButton2->setColour (ToggleButton::textColourId, Colour (0xff401010));
 
     addAndMakeVisible (modFreqText1 = new Label ("new label",
@@ -210,35 +208,19 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
 
      NUM_SYNC_OPTIONS
      } SYNC_OPTIONS;*/
-    syncModeLabels.add("NULL");
-    syncModeLabels.add("Two Bars");
-    syncModeLabels.add("One Bar");
-    syncModeLabels.add("1/2");
-    syncModeLabels.add("Dotted 1/4");
-    syncModeLabels.add("1/4");
-    syncModeLabels.add("1/4 Triplet");
-    syncModeLabels.add("Dotted 1/8");
-    syncModeLabels.add("1/8");
-    syncModeLabels.add("1/8 Triplet");
-    syncModeLabels.add("Dotted 1/16");
-    syncModeLabels.add("1/16");
-    syncModeLabels.add("1/16 Triplet");
 
-    modRateDial1->setValue(lastSyncedFreqs[0]);
-    sliderValueChanged(modRateDial1);
-    modDepth1->setValue(0.5);
-    sliderValueChanged(modDepth1);
-    modRateDial2->setValue(lastSyncedFreqs[1]);
-    sliderValueChanged(modRateDial2);
-    modDepth2->setValue(0.5);
-    sliderValueChanged(modDepth2);
     mix->setValue(0.5);
-    sliderValueChanged(mix);
-    modSyncButton1->setToggleState(true, juce::NotificationType::sendNotification);
-    buttonClicked(modSyncButton1);
-    modSyncButton2->setToggleState(true, juce::NotificationType::sendNotification);
-    buttonClicked(modSyncButton2);
+    //sliderValueChanged(mix);
 
+    modDepth1->setValue(0.5);
+    modSyncButton1->setToggleState(true, juce::NotificationType::sendNotification);
+    modRateDial1->setValue(5.0);
+
+    modDepth2->setValue(0.5);
+    modSyncButton2->setToggleState(true, juce::NotificationType::sendNotification);
+    modRateDial2->setValue(8.0);
+
+    startTimer(200);
     //[/Constructor]
 }
 
@@ -504,7 +486,7 @@ void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_SYNC1, mode);
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_RATE_DIAL1,
                                             freqDialValue);
-        displayText = (currentlySynced)?syncModeLabels.getReference(mode):
+        displayText = (currentlySynced)?processor.syncModeLabels.getReference(mode):
         String(processor.minFreeRate + (freqDialValue * processor.oneOverFreqDialRange) * (processor.maxFreeRate - processor.minFreeRate), 2) + " Hz";
         modFreqText1->setText(displayText, juce::NotificationType::sendNotification);
         //[/UserSliderCode_modRateDial1]
@@ -542,7 +524,7 @@ void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_SYNC2, mode);
         processor.setParameterNotifyingHost(TremuluxAudioProcessor::MOD_RATE_DIAL2,
                                             freqDialValue);
-        displayText = (currentlySynced)?syncModeLabels.getReference(mode):
+        displayText = (currentlySynced)?processor.syncModeLabels.getReference(mode):
         String(processor.minFreeRate + (freqDialValue * processor.oneOverFreqDialRange) * (processor.maxFreeRate - processor.minFreeRate), 2) + " Hz";
         modFreqText2->setText(displayText, juce::NotificationType::sendNotification);
 
@@ -609,9 +591,36 @@ void PluginInterface::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void PluginInterface::timerCallback(){
+    //exchange any data you want between UI elements and the plugin "ourProcessor"
+    if(processor.NeedsUIUpdate()){
+        //TODO: add bypass button
+        //BypassButton->setToggleState(1.0f == processor.getParameter(TremuluxAudioProcessor::BYPASS), false);
+        mix->setValue(processor.getParameter(TremuluxAudioProcessor::MIX), juce::dontSendNotification);
+
+        modDepth1->setValue(processor.getParameter(TremuluxAudioProcessor::MOD_DEPTH1), juce::dontSendNotification);
+        modRateDial1->setValue(processor.getParameter(TremuluxAudioProcessor::MOD_RATE_DIAL1), juce::dontSendNotification);
+        modSyncButton1->setToggleState(processor.getParameter(TremuluxAudioProcessor::MOD_SYNC_BUTTON1),
+                                       juce::dontSendNotification);
+
+        modDepth2->setValue(processor.getParameter(TremuluxAudioProcessor::MOD_DEPTH2), juce::dontSendNotification);
+        modRateDial2->setValue(processor.getParameter(TremuluxAudioProcessor::MOD_RATE_DIAL2), juce::dontSendNotification);
+        modSyncButton2->setToggleState(processor.getParameter(TremuluxAudioProcessor::MOD_SYNC_BUTTON2),
+                                       juce::dontSendNotification);
+
+        processor.ClearUIUpdateFlag();
+        //std::cout << "UIUpdated" << std::endl;
+    }
+
+}
+
 void PluginInterface::setRateDialRanges(const float max){
     modRateDial1->setRange (1.0, max, 0);
     modRateDial2->setRange (1.0, max, 0);
+}
+
+void PluginInterface::visibilityChanged(){
+    processor.RaiseUIUpdateFlag();
 }
 //[/MiscUserCode]
 
@@ -626,7 +635,7 @@ void PluginInterface::setRateDialRanges(const float max){
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="PluginInterface" componentName=""
-                 parentClasses="public AudioProcessorEditor" constructorParams="TremuluxAudioProcessor&amp; p"
+                 parentClasses="public AudioProcessorEditor, public Timer" constructorParams="TremuluxAudioProcessor&amp; p"
                  variableInitialisers="AudioProcessorEditor (&amp;p), processor (p)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="1" initialWidth="336" initialHeight="344">
@@ -717,12 +726,12 @@ BEGIN_JUCER_METADATA
                 virtualName="" explicitFocusOrder="0" pos="72 24 100% 50%" posRelativeX="ef41dbafc2b42ab0"
                 posRelativeY="6f801a8b6732fcf6" posRelativeW="6f801a8b6732fcf6"
                 posRelativeH="6f801a8b6732fcf6" txtcol="ff401010" buttonText="Sync"
-                connectedEdges="0" needsCallback="1" radioGroupId="0" state="1"/>
+                connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
   <TOGGLEBUTTON name="new toggle button" id="b200103104a767ac" memberName="modSyncButton2"
                 virtualName="" explicitFocusOrder="0" pos="72 24 100% 50%" posRelativeX="f1fb1887848bb254"
                 posRelativeY="ec1ad9429a64df37" posRelativeW="ec1ad9429a64df37"
                 posRelativeH="ec1ad9429a64df37" txtcol="ff401010" buttonText="Sync"
-                connectedEdges="0" needsCallback="1" radioGroupId="0" state="1"/>
+                connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
   <LABEL name="new label" id="a734cb7cd6d90437" memberName="modFreqText1"
          virtualName="" explicitFocusOrder="0" pos="0 56 100% 20" posRelativeX="6f801a8b6732fcf6"
          posRelativeY="6f801a8b6732fcf6" posRelativeW="6f801a8b6732fcf6"

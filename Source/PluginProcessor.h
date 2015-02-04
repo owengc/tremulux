@@ -107,6 +107,12 @@ public:
     const float freqDialRange = NUM_SYNC_OPTIONS - 1;
     const float oneOverFreqDialRange = 1.0 / freqDialRange;
     const float minFreeRate = 0.1, maxFreeRate = 10.0;
+    StringArray syncModeLabels;
+    
+    
+    bool NeedsUIUpdate(){return UIUpdateFlag;};
+    void ClearUIUpdateFlag(){UIUpdateFlag = false;};
+    void RaiseUIUpdateFlag(){UIUpdateFlag = true;};
     
 private:
     float mix;
@@ -135,6 +141,9 @@ private:
     SYNC_OPTIONS modSyncs[numMods];
     float lastBPM;
     unsigned int lastTimeSigDenominator, lastTimeSigNumerator;
+    
+    //automation/preset stuff
+    bool UIUpdateFlag;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TremuluxAudioProcessor)
 };

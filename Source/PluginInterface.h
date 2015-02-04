@@ -36,6 +36,7 @@
                                                                     //[/Comments]
 */
 class PluginInterface  : public AudioProcessorEditor,
+                         public Timer,
                          public SliderListener,
                          public ButtonListener
 {
@@ -46,7 +47,10 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
+    void timerCallback();
     void setRateDialRanges(const float max);
+
+    void visibilityChanged();
     //[/UserMethods]
 
     void paint (Graphics& g);
@@ -59,9 +63,8 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     TremuluxAudioProcessor& processor;
-    float lastUnsyncedFreqs[2]{0.1, 0.1};
+    float lastUnsyncedFreqs[2]{5.0, 8.0};
     float lastSyncedFreqs[2]{5.0, 8.0};
-    StringArray syncModeLabels;
     //[/UserVariables]
 
     //==============================================================================
