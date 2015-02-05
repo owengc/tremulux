@@ -97,7 +97,7 @@ TremuluxAudioProcessor::TremuluxAudioProcessor()
     setParameter(MOD_SYNC2, EIGHTH);
     setParameter(MOD_RATE_DIAL2, 8.0);
     
-    UIUpdateFlag = false;
+    UIUpdateFlag = true;
 }
 
 TremuluxAudioProcessor::~TremuluxAudioProcessor()
