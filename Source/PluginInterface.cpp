@@ -209,16 +209,17 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
      NUM_SYNC_OPTIONS
      } SYNC_OPTIONS;*/
 
-    mix->setValue(0.5);
+    
+    mix->setValue(p.getMix());
     //sliderValueChanged(mix);
 
-    modDepth1->setValue(0.5);
+    modDepth1->setValue(p.getModDepth(0));
     modSyncButton1->setToggleState(true, juce::NotificationType::sendNotification);
-    modRateDial1->setValue(5.0);
+    modRateDial1->setValue(p.getModRate(0));
 
-    modDepth2->setValue(0.5);
+    modDepth2->setValue(p.getModDepth(1));
     modSyncButton2->setToggleState(true, juce::NotificationType::sendNotification);
-    modRateDial2->setValue(8.0);
+    modRateDial2->setValue(p.getModDepth(1));
 
     startTimer(200);
     //[/Constructor]
@@ -489,6 +490,7 @@ void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
         displayText = (currentlySynced)?processor.syncModeLabels.getReference(mode):
         String(processor.minFreeRate + (freqDialValue * processor.oneOverFreqDialRange) * (processor.maxFreeRate - processor.minFreeRate), 2) + " Hz";
         modFreqText1->setText(displayText, juce::NotificationType::sendNotification);
+        
         //[/UserSliderCode_modRateDial1]
     }
     else if (sliderThatWasMoved == modDepth1)

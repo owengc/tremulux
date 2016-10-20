@@ -13,8 +13,12 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Oscillator.h"
-const int numMods = 2;
+#include "Filter.h"
+#include <array>
 
+const int NUM_MODS = 2,
+          NUM_LOWPASSES = 3,
+          OUTPUT_SCALING_FACTOR = 1.0 / (NUM_MODS + 1);
 //==============================================================================
 /**
 */
@@ -114,32 +118,38 @@ public:
     void ClearUIUpdateFlag(){UIUpdateFlag = false;};
     void RaiseUIUpdateFlag(){UIUpdateFlag = true;};
     
+    const float getMix() const{return mix;}
+    const float getModDepth(const unsigned int modIdx) const{return mods[modIdx].getAmplitude();}
+    const float getModRate(const unsigned int modIdx) const{return mods[modIdx].getFrequency();}
+    
 private:
     float mix;
 
     unsigned int modInterp;
-    float modRateDials[numMods];
-    float modRateTargets[numMods];
-    float modRates[numMods];
+    float modRateDials[NUM_MODS];
+    float modRateTargets[NUM_MODS];
+    float modRates[NUM_MODS];
     void updateSyncedRates(const bool force = false);
-    
+    void updateLowPassCutOff();
 
     float calcSyncedRate(const int mode, const int modID);
     float calcRate(const float freqDialValue, const int modID);
     
-    float modDepthTargets[numMods];
+    float modDepthTargets[NUM_MODS];
 
-    Wavetable<float> sineTable;
-    Oscillator<float> mods[numMods];
+    shared_ptr<Wavetable<float> > sineTable;
+    std::array<Sine<float>, NUM_MODS> mods;
+    std::array<LowPass<float>, NUM_LOWPASSES> lowPasses;
     
     AudioPlayHead *transport;
     juce::AudioPlayHead::CurrentPositionInfo transportInfo;
 
 
-    float syncFactors[NUM_SYNC_OPTIONS];
-    unsigned int modSyncButtons[numMods];
-    SYNC_OPTIONS modSyncs[numMods];
+    std::array<float, NUM_SYNC_OPTIONS> syncFactors;
+    std::array<unsigned int, NUM_MODS> modSyncButtons;
+    std::array<SYNC_OPTIONS, NUM_MODS> modSyncs;
     float lastBPM;
+    float maxModRate;
     unsigned int lastTimeSigDenominator, lastTimeSigNumerator;
     
     //automation/preset stuff

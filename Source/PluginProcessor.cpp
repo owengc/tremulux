@@ -13,10 +13,13 @@
 
 
 //==============================================================================
-TremuluxAudioProcessor::TremuluxAudioProcessor()
+TremuluxAudioProcessor::TremuluxAudioProcessor() :
+sineTable(make_shared<Wavetable<float> >(Wavetable<float>::Waveform::SINE, 4194304, 48000)),
+mods{{Sine<float>(sineTable, 48000), Sine<float>(sineTable, 48000)}},
+lowPasses{{LowPass<float>(48000, 15000), LowPass<float>(48000, 15000), LowPass<float>(48000, 15000)}},
+lastBPM(120), maxModRate(0),
+lastTimeSigDenominator(4), lastTimeSigNumerator(4)
 {
-    sineTable.setWaveform(Wavetable<float>::WAVEFORM::SINE, true);
-    
     for(int i = 0; i < NUM_SYNC_OPTIONS; i++){
         SYNC_OPTIONS option = (SYNC_OPTIONS)i;
         switch(option){
@@ -97,6 +100,8 @@ TremuluxAudioProcessor::TremuluxAudioProcessor()
     setParameter(MOD_SYNC2, EIGHTH);
     setParameter(MOD_RATE_DIAL2, 8.0);
     
+    
+    
     UIUpdateFlag = true;
 }
 
@@ -151,8 +156,8 @@ void TremuluxAudioProcessor::setParameter (int index, float newValue)
     PARAMS p = (PARAMS) index;
     switch(p){
         case MOD_DEPTH1:// [0.0, 1.0]
-            modDepthTargets[0] = newValue;
-            mods[0].updateAmp(newValue, modInterp);
+            modDepthTargets[0] = newValue/2.0;
+            mods[0].updateAmp(newValue/2.0, modInterp);
             break;
         case MOD_RATE_DIAL1:// [0.1, 1.2]
             modRateDials[0] = newValue;
@@ -162,6 +167,7 @@ void TremuluxAudioProcessor::setParameter (int index, float newValue)
             // Only called when MOD_RATE_DIAL1 changes, should receive Hz value
             modRateTargets[0] = newValue;
             mods[0].updateFreq(newValue, modInterp);
+            updateLowPassCutOff();
             break;
         case MOD_SYNC_BUTTON1:// 0.0 or 1.0
             modSyncButtons[0] = (int)newValue;
@@ -171,8 +177,8 @@ void TremuluxAudioProcessor::setParameter (int index, float newValue)
             modSyncs[0] = (SYNC_OPTIONS)newValue;
             break;
         case MOD_DEPTH2:// [0.0, 1.0]
-            modDepthTargets[1] = newValue;
-            mods[1].updateAmp(newValue, modInterp);
+            modDepthTargets[1] = newValue/2.0;
+            mods[1].updateAmp(newValue/2.0, modInterp);
             break;
         case MOD_RATE_DIAL2:// [0.1, 1.2]
             modRateDials[1] = newValue;
@@ -182,6 +188,7 @@ void TremuluxAudioProcessor::setParameter (int index, float newValue)
             // Only called when MOD_RATE_DIAL1 changes, should receive Hz value
             modRateTargets[1] = newValue;
             mods[1].updateFreq(newValue, modInterp);
+            updateLowPassCutOff();
             break;
         case MOD_SYNC_BUTTON2:// 0.0 or 1.0
             modSyncButtons[1] = (int)newValue;
@@ -342,8 +349,9 @@ void TremuluxAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
  
-    for(int m = 0; m < numMods; m++){
-        mods[m].init(&sineTable, sampleRate);
+    sineTable->init(sampleRate);
+    for(int m = 0; m < NUM_MODS; m++){
+        mods[m].init(sampleRate);
         mods[m].start(modDepthTargets[m], modRateTargets[m], 0.0);
     }
 }
@@ -363,28 +371,37 @@ void TremuluxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer
     // when they first compile the plugin, but obviously you don't need to
     // this code if your algorithm already fills all the output channels.
     int numSamples = buffer.getNumSamples();
-    for (int i = getNumInputChannels(); i < getNumOutputChannels(); ++i)
-        buffer.clear (i, 0, numSamples);
-
-    // This is the place where you'd normally do the guts of your plugin's
+    int numChannels = buffer.getNumChannels();
+        // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     if(modSyncButtons[0] || modSyncButtons[1]){
         // at least one mod is in sync mode, check for changes in transport
         updateSyncedRates();
     }
-    for (int channel = 0; channel < getNumInputChannels(); ++channel)
+    for (int channel = 0; channel < numChannels; ++channel)
     {
         const float* inData = buffer.getReadPointer(channel);
         float* outData = buffer.getWritePointer(channel);
-        for(int i = 0; i < numSamples; i++){
-            float in = *inData++;
+        for(int i = 0; i < numSamples; ++i)
+        {
+            const float in = *inData++;
             float out = in;
-            for(int m = 0; m < numMods; m++){//testing
-                out *= (1 + mods[m].next() * 0.5);
+            for(int i = 0; i < NUM_LOWPASSES; ++i)
+            {
+                out = lowPasses[i].next(out);
+            }
+            for(int m = 0; m < NUM_MODS; ++m)
+            {
+                float mod = mods[m].next(),
+                dcOffset = 1.0 - mods[m].getAmplitude();
+
+                out *= (dcOffset + mod);
                 
                 // This is here to keep updateRates informed
                 modRates[m] = mods[m].getFrequency();
             }
+    
+            out *= OUTPUT_SCALING_FACTOR;
             *outData++ = mix * out + (1.0 - mix) * in;
         }
     }
@@ -557,17 +574,42 @@ void TremuluxAudioProcessor::updateSyncedRates(const bool force)
         lastBPM = bpm;
         lastTimeSigDenominator = timeSigDenominator;
         lastTimeSigNumerator = timeSigNumerator;
-        for(int m = 0; m < numMods; m++){
+        
+        for(int m = 0; m < NUM_MODS; ++m)
+        {
             int mode = modSyncs[m];
             assert(mode > 0);
             modRateTargets[m] = calcSyncedRate(mode, m);
             if(modRateTargets[m] != modRates[m]){
                 mods[m].updateFreq(modRateTargets[m], modInterp);
+                
             }
         }
+        updateLowPassCutOff();
     }
 }
 
+void TremuluxAudioProcessor::updateLowPassCutOff()
+{
+    float temp = 0;
+    for(int m = 0; m < NUM_MODS; ++m)
+    {
+        if(modRateTargets[m] > temp)
+        {
+            temp = modRateTargets[m];
+        }
+    }
+    if(temp != maxModRate)
+    {
+        maxModRate = temp;
+        const float samplingRate = getSampleRate(),
+        cutOff = samplingRate / 2 - (8000 + maxModRate * maxModRate);
+        for(int i = 0; i < NUM_LOWPASSES; ++i)
+        {
+            lowPasses[i].setCutOff(samplingRate, cutOff);
+        }
+    }
+}
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
