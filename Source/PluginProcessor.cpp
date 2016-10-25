@@ -9,17 +9,47 @@
 */
 
 #include "PluginProcessor.h"
-#include "PluginInterface.h"
-
+#include "PluginEditor.h"
+#include "tremuluxGUI.h"
 
 //==============================================================================
-TremuluxAudioProcessor::TremuluxAudioProcessor() :
-sineTable(make_shared<Wavetable<float> >(Wavetable<float>::Waveform::SINE, 4194304, 48000)),
-mods{{Sine<float>(sineTable, 48000), Sine<float>(sineTable, 48000)}},
-lowPasses{{LowPass<float>(48000, 15000), LowPass<float>(48000, 15000), LowPass<float>(48000, 15000)}},
-lastBPM(120), maxModRate(0),
+String TremuluxCore::mixParamID("mix");
+String TremuluxCore::bypassParamID("bypass");
+String TremuluxCore::gainParamID("gain");
+String TremuluxCore::rateParamID[2]{"rate1", "rate2"};
+String TremuluxCore::depthParamID[2]{"depth1", "depth2"};
+String TremuluxCore::syncModeParamID[2]{"syncMode1", "syncMode2"};
+
+TremuluxCore::TremuluxCore() :
+logFile(APPDIR_PATH + "/tremuluxLog.txt"),
+logger(logFile, "TREMULUX log", 0),
+
+sampleRate(0),
+maxModRate(0),
+
+sineTable(make_shared<Wavetable<float> >(Wavetable<float>::Waveform::SINE, 4194304, sampleRate)),
+mods{{Sine<float>(sineTable, sampleRate), Sine<float>(sineTable, sampleRate)}},
+lowPasses{{LowPass<float>(sampleRate, LOWPASS_CUTOFF, LOWPASS_ORDER), LowPass<float>(sampleRate, LOWPASS_CUTOFF, LOWPASS_ORDER)}},
+
+undoManager(new UndoManager()),
+parameterManager(new AudioProcessorValueTreeState(*this, undoManager)),
+
+uiUpdateData(true),
+bypassData(false),
+mixData(0.75),
+gainData(0.0),
+interpData(1024),
+
+rateData(),
+depthData(),
+syncModeData(),
+      
+syncFactors(),
+lastBPM(120),
 lastTimeSigDenominator(4), lastTimeSigNumerator(4)
 {
+    ////////////////
+    // Tempo Syncing
     for(int i = 0; i < NUM_SYNC_OPTIONS; i++){
         SYNC_OPTIONS option = (SYNC_OPTIONS)i;
         switch(option){
@@ -80,218 +110,123 @@ lastTimeSigDenominator(4), lastTimeSigNumerator(4)
                 break;
         }
     }
-    
-    //Not sure if these defaults will screw things up...
-    lastBPM = 120;
-    lastTimeSigDenominator = 4;
-    lastTimeSigNumerator = 4;
-    modInterp = 1024;
-    
-    setParameter(MIX, 0.5);
-    
-    setParameter(MOD_DEPTH1, 0.5);
-    setParameter(MOD_SYNC_BUTTON1, 1);
-    setParameter(MOD_SYNC1, QUARTER);
-    setParameter(MOD_RATE_DIAL1, 5.0);
+    for(int i = 0; i < NUM_MODS; ++i)
+    {
+        rateData[i].store(2 + 2 * i);
+        depthData[i].store(0.5);
+        syncModeData[i].store(SYNC_OPTIONS::OFF);
+    }
 
     
-    setParameter(MOD_DEPTH2, 0.5);
-    setParameter(MOD_SYNC_BUTTON2, 1);
-    setParameter(MOD_SYNC2, EIGHTH);
-    setParameter(MOD_RATE_DIAL2, 8.0);
+    // Use a lambda I guess!
+//    std::function<String (float)> valueToTextFunction,
+//    std::function<float (const String&)> textToValueFunction)
+    // Oscillator I Parameters
+//    parameterManager->createAndAddParameter(rateParamID[0], "Oscillator I Rate", TRANS("Oscillator I Rate"),
+//                                            NormalisableRange<float> (0.1, 10.0, 0), mixData.load(),   nullptr, nullptr);
+//    parameterManager->addParameterListener(mixParamID, this);
+    
+    // Oscillator II Parameters
     
     
+    // Master Parameters
+    parameterManager->createAndAddParameter(mixParamID, "Mix", TRANS("Mix"),
+                                 NormalisableRange<float> (0.0, 1.0, 0), mixData.load(),   nullptr, nullptr);
+    parameterManager->addParameterListener(mixParamID, this);
+    parameterManager->createAndAddParameter(bypassParamID, "Bypass", TRANS("Bypass"),
+                                            NormalisableRange<float> (0.0, 1.0, 1), bypassData.load(),   nullptr, nullptr);
+    parameterManager->addParameterListener(bypassParamID, this);
+    parameterManager->createAndAddParameter(gainParamID, "Gain", TRANS("Gain"),
+                                            NormalisableRange<float> (0.0, 1.0, 0), gainData.load(),   nullptr, nullptr);
+    parameterManager->addParameterListener(gainParamID, this);
     
-    UIUpdateFlag = true;
+    
+//    addParameter(gainParam = new AudioParameterFloat("gain", "Makeup Gain", 0.0, 1.0, 0.0));
+//
+    
+    
+    //    addParameter(freeRateParam1 = new AudioParameterFloat("freeRate1", "Oscillator I Free Rate", FLT_EPSILON, 10.0, 0.5));
+    //    addParameter(freeRateParam2 = new AudioParameterFloat("freeRate2", "Oscillator II Free Rate", FLT_EPSILON, 10.0, 0.5));
+    //    addParameter(depthParam1 = new AudioParameterFloat("depth1", "Oscillator I Depth", 0.0, 1.0, 0.5));
+    //    addParameter(depthParam2 = new AudioParameterFloat("depth2", "Oscillator II Depth", 0.0, 1.0, 0.5));
+    //    addParameter(syncRateParam1 = new AudioParameterInt("syncRate1", "Oscillator I Synced Rate", SYNC_OPTIONS::OFF, SYNC_OPTIONS::TRIPLET_SIXTEENTH, SYNC_OPTIONS::OFF));
+//    addParameter(syncRateParam2 = new AudioParameterInt("syncRate2", "Oscillator II Synced Rate", SYNC_OPTIONS::OFF, SYNC_OPTIONS::TRIPLET_SIXTEENTH, SYNC_OPTIONS::OFF));
+//    
+//    addParameter(syncFreeParam1 = new AudioParameterBool("syncFree1", "Oscillator I Tempo Sync", false));
+//    addParameter(syncFreeParam2 = new AudioParameterBool("syncFree2", "Oscillator II Tempo Sync", false));
+    
+//    addParameter(bypassParam = new AudioParameterBool("bypass", "Bypass", false));
+   
+    
+    
+    parameterManager->state = ValueTree("Tremulux");
+    
+    const unsigned int numInputChannels = getTotalNumInputChannels(),
+                       numOutputChannels = getTotalNumOutputChannels();
+    
+    // Don't want to deal with other I/O setups for now
+    assert(numInputChannels == numOutputChannels);
+    
+    isStereo = (numInputChannels > 1);
 }
 
-TremuluxAudioProcessor::~TremuluxAudioProcessor()
+TremuluxCore::~TremuluxCore()
 {
+    gui = nullptr;
+    sineTable = nullptr;
+    
+    parameterManager = nullptr;
+    undoManager = nullptr;
 }
 
 //==============================================================================
-const String TremuluxAudioProcessor::getName() const
+const String TremuluxCore::getName() const
 {
     return JucePlugin_Name;
 }
 
-int TremuluxAudioProcessor::getNumParameters()
+void TremuluxCore::parameterChanged(const String &parameterID, float newValue)
 {
-    return NUM_PARAMS;
-}
-
-float TremuluxAudioProcessor::getParameter (int index)
-{
-    PARAMS p = (PARAMS) index;
-    switch(p){
-        case MOD_DEPTH1:
-            return modDepthTargets[0];
-        case MOD_RATE_DIAL1:
-            return modRateDials[0];
-        case MOD_RATE1:
-            return modRateTargets[0];
-        case MOD_SYNC1:
-            return modSyncs[0];
-        case MOD_SYNC_BUTTON1:
-            return modSyncButtons[0];
-        case MOD_DEPTH2:
-            return modDepthTargets[1];
-        case MOD_RATE_DIAL2:
-            return modRateDials[1];
-        case MOD_RATE2:
-            return modRateTargets[1];
-        case MOD_SYNC2:
-            return modSyncs[1];
-        case MOD_SYNC_BUTTON2:
-            return modSyncButtons[1];
-        case MIX:
-            return mix;
-        default:
-            return 0.0f;
+    if(parameterID == mixParamID)
+    {
+        mixData.store(newValue);
+    }
+    else if(parameterID == bypassParamID)
+    {
+        bypassData.store(newValue);
+    }
+    else if(parameterID == gainParamID)
+    {
+        gainData.store(newValue);
     }
 }
 
-void TremuluxAudioProcessor::setParameter (int index, float newValue)
+AudioProcessorValueTreeState& TremuluxCore::getParameterManager()
 {
-    PARAMS p = (PARAMS) index;
-    switch(p){
-        case MOD_DEPTH1:// [0.0, 1.0]
-            modDepthTargets[0] = newValue/2.0;
-            mods[0].updateAmp(newValue/2.0, modInterp);
-            break;
-        case MOD_RATE_DIAL1:// [0.1, 1.2]
-            modRateDials[0] = newValue;
-            setParameter(TremuluxAudioProcessor::MOD_RATE1, calcRate(newValue, 0));
-            break;
-        case MOD_RATE1:
-            // Only called when MOD_RATE_DIAL1 changes, should receive Hz value
-            modRateTargets[0] = newValue;
-            mods[0].updateFreq(newValue, modInterp);
-            updateLowPassCutOff();
-            break;
-        case MOD_SYNC_BUTTON1:// 0.0 or 1.0
-            modSyncButtons[0] = (int)newValue;
-            break;
-        case MOD_SYNC1:// SYNC_OPTIONS
-            // Only called when MOD_SYNC_BUTTON1 or MOD_RATE_DIAL1 changes
-            modSyncs[0] = (SYNC_OPTIONS)newValue;
-            break;
-        case MOD_DEPTH2:// [0.0, 1.0]
-            modDepthTargets[1] = newValue/2.0;
-            mods[1].updateAmp(newValue/2.0, modInterp);
-            break;
-        case MOD_RATE_DIAL2:// [0.1, 1.2]
-            modRateDials[1] = newValue;
-            setParameter(TremuluxAudioProcessor::MOD_RATE2, calcRate(newValue, 1));
-            break;
-        case MOD_RATE2:
-            // Only called when MOD_RATE_DIAL1 changes, should receive Hz value
-            modRateTargets[1] = newValue;
-            mods[1].updateFreq(newValue, modInterp);
-            updateLowPassCutOff();
-            break;
-        case MOD_SYNC_BUTTON2:// 0.0 or 1.0
-            modSyncButtons[1] = (int)newValue;
-            break;
-        case MOD_SYNC2:// SYNC_OPTIONS
-            // Only called when MOD_SYNC_BUTTON2 or MOD_RATE_DIAL2 changes
-            modSyncs[1] = (SYNC_OPTIONS)newValue;
-            break;
-        case MIX:// [0.0, 1.0]
-            mix = newValue;
-            break;
-        case NUM_PARAMS:
-            // Just here to avoid warnings
-            break;
-    }
-    return;
+    return *parameterManager;
 }
 
-const String TremuluxAudioProcessor::getParameterName (int index)
-{
-    PARAMS p = (PARAMS) index;
-    switch(p){
-        case MOD_DEPTH1:
-            return "Modulator 1 Depth";
-        case MOD_RATE_DIAL1:
-            return "modratedial1";
-        case MOD_RATE1:
-            return "Modulator 1 Rate";
-        case MOD_SYNC1:
-            return "Modulator 1 Sync Mode";
-        case MOD_DEPTH2:
-            return "Modulator 2 Depth";
-        case MOD_RATE_DIAL2:
-            return "modratedial2";
-        case MOD_RATE2:
-            return "Modulator 2 Rate";
-        case MOD_SYNC2:
-            return "Modulator 2 Sync Mode";
-        case MIX:
-            return "Master Mix";
-        default:
-            return "";
-    }
-}
-
-const String TremuluxAudioProcessor::getParameterText (int index)
-{
-    PARAMS p = (PARAMS) index;
-    switch(p){
-        case MOD_DEPTH1:
-            return String(modDepthTargets[0], 2);
-        case MOD_RATE_DIAL1:
-            return "modratedial1 value";
-        case MOD_RATE1:
-            if(modSyncButtons[0]){
-                return syncModeLabels[modSyncs[0]];
-            }
-            else{
-                return String(modRateTargets[0], 2);
-            }
-        case MOD_SYNC1:
-            return "modsync1 value";
-        case MOD_DEPTH2:
-            return String(modDepthTargets[1], 2);
-        case MOD_RATE_DIAL2:
-            return "modratedial2 value";
-        case MOD_RATE2:
-            if(modSyncButtons[0]){
-                return syncModeLabels[modSyncs[1]];
-            }
-            else{
-                return String(modRateTargets[1], 2);
-            }
-        case MOD_SYNC2:
-            return "modsync2 value";
-        case MIX:
-            return String(mix, 2);
-        default:
-            return "";
-    }
-}
-
-const String TremuluxAudioProcessor::getInputChannelName (int channelIndex) const
+const String TremuluxCore::getInputChannelName (int channelIndex) const
 {
     return String (channelIndex + 1);
 }
 
-const String TremuluxAudioProcessor::getOutputChannelName (int channelIndex) const
+const String TremuluxCore::getOutputChannelName (int channelIndex) const
 {
     return String (channelIndex + 1);
 }
 
-bool TremuluxAudioProcessor::isInputChannelStereoPair (int index) const
+bool TremuluxCore::isInputChannelStereoPair (int index) const
 {
     return true;
 }
 
-bool TremuluxAudioProcessor::isOutputChannelStereoPair (int index) const
+bool TremuluxCore::isOutputChannelStereoPair (int index) const
 {
     return true;
 }
 
-bool TremuluxAudioProcessor::acceptsMidi() const
+bool TremuluxCore::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -300,7 +235,7 @@ bool TremuluxAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool TremuluxAudioProcessor::producesMidi() const
+bool TremuluxCore::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -309,60 +244,70 @@ bool TremuluxAudioProcessor::producesMidi() const
    #endif
 }
 
-bool TremuluxAudioProcessor::silenceInProducesSilenceOut() const
+bool TremuluxCore::silenceInProducesSilenceOut() const
 {
     return false;
 }
 
-double TremuluxAudioProcessor::getTailLengthSeconds() const
+double TremuluxCore::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int TremuluxAudioProcessor::getNumPrograms()
+int TremuluxCore::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int TremuluxAudioProcessor::getCurrentProgram()
+int TremuluxCore::getCurrentProgram()
 {
     return 0;
 }
 
-void TremuluxAudioProcessor::setCurrentProgram (int index)
+void TremuluxCore::setCurrentProgram (int index)
 {
 }
 
-const String TremuluxAudioProcessor::getProgramName (int index)
+const String TremuluxCore::getProgramName (int index)
 {
     return String();
 }
 
-void TremuluxAudioProcessor::changeProgramName (int index, const String& newName)
+void TremuluxCore::changeProgramName (int index, const String& newName)
 {
 }
 
 //==============================================================================
-void TremuluxAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void TremuluxCore::prepareToPlay (double sr, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
- 
-    sineTable->init(sampleRate);
-    for(int m = 0; m < NUM_MODS; m++){
-        mods[m].init(sampleRate);
-        mods[m].start(modDepthTargets[m], modRateTargets[m], 0.0);
+    
+    if(sr != sampleRate)
+    {
+        sampleRate = sr;
+        sineTable->init(sampleRate);
+        for(int i = 0; i < NUM_MODS; ++i)
+        {
+            const float rate = rateData[i].load(),
+                        depth = depthData[i].load();
+            mods[i].init(sampleRate);
+            mods[i].start(depth, rate, 0.0);
+            
+            // Need to prevent aliasing artifacts
+            lowPasses[i].setCutOff(sampleRate, sampleRate * 0.25);
+        }
     }
 }
 
-void TremuluxAudioProcessor::releaseResources()
+void TremuluxCore::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
-void TremuluxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void TremuluxCore::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -370,155 +315,199 @@ void TremuluxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer
     // I've added this to avoid people getting screaming feedback
     // when they first compile the plugin, but obviously you don't need to
     // this code if your algorithm already fills all the output channels.
-    int numSamples = buffer.getNumSamples();
-    int numChannels = buffer.getNumChannels();
-        // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    if(modSyncButtons[0] || modSyncButtons[1]){
+    const unsigned int numChannels = buffer.getNumChannels(),
+                        numSamples = buffer.getNumSamples();
+    
+    // For now only supporting mono & stereo
+    assert(numChannels <= NUM_MODS);
+    
+    
+    const bool isActive = !bypassData.load(),
+    isSynced = (syncModeData[0].load() || syncModeData[1].load());
+    
+    if(isSynced){
         // at least one mod is in sync mode, check for changes in transport
         updateSyncedRates();
     }
-    for (int channel = 0; channel < numChannels; ++channel)
-    {
-        const float* inData = buffer.getReadPointer(channel);
-        float* outData = buffer.getWritePointer(channel);
-        for(int i = 0; i < numSamples; ++i)
-        {
-            const float in = *inData++;
-            float out = in;
-            for(int i = 0; i < NUM_LOWPASSES; ++i)
-            {
-                out = lowPasses[i].next(out);
-            }
-            for(int m = 0; m < NUM_MODS; ++m)
-            {
-                float mod = mods[m].next(),
-                dcOffset = 1.0 - mods[m].getAmplitude();
-
-                out *= (dcOffset + mod);
-                
-                // This is here to keep updateRates informed
-                modRates[m] = mods[m].getFrequency();
-            }
     
-            out *= OUTPUT_SCALING_FACTOR;
-            *outData++ = mix * out + (1.0 - mix) * in;
+    if(isActive)
+    {
+        const float mix = mixData.load(),
+        gain = gainData.load();
+        
+        const ScopedLock sl (callbackLock);
+        for (int channel = 0; channel < numChannels; ++channel)
+        {
+            // If stereo, process each channel separately
+            const unsigned int stopCondition = isStereo? channel + 1 : NUM_MODS;
+            
+            const float* inData = buffer.getReadPointer(channel);
+            float* outData = buffer.getWritePointer(channel);
+            for(int i = 0; i < numSamples; ++i)
+            {
+                const float in = *inData++;
+                float out = lowPasses[channel].next(in);
+                for(int m = channel; m < stopCondition; ++m)
+                {
+                    const float mod = mods[m].next(),
+                          dcOffset = 1.0 - mods[m].getAmplitude();
+                    
+                    out *= (dcOffset + mod);
+                }
+                
+//                out *= OUTPUT_SCALING_FACTOR;
+                *outData++ = mix * out + (1.0 - mix) * in;
+            }
         }
+    }
+    else
+    {
+        processBlockBypassed(buffer, midiMessages);
     }
 }
 
 //==============================================================================
-bool TremuluxAudioProcessor::hasEditor() const
+bool TremuluxCore::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* TremuluxAudioProcessor::createEditor()
+AudioProcessorEditor* TremuluxCore::createEditor()
 {
-    return new PluginInterface (*this);
+    return new NewProjectAudioProcessorEditor (*this);
 }
 
 //==============================================================================
-void TremuluxAudioProcessor::getStateInformation (MemoryBlock& destData)
+void TremuluxCore::getStateInformation (MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    XmlElement root("Root");
-    XmlElement *el;
-    el = root.createNewChildElement("Mix");
-    el->addTextElement(String(mix));
-    el = root.createNewChildElement("ModRate1");
-    el->addTextElement(String(modRateTargets[0]));
-    el = root.createNewChildElement("ModRateDial1");
-    el->addTextElement(String(modRateDials[0]));
-    el = root.createNewChildElement("ModDepth1");
-    el->addTextElement(String(modDepthTargets[0]));
-    el = root.createNewChildElement("ModSyncButton1");
-    el->addTextElement(String(modSyncButtons[0]));
-    el = root.createNewChildElement("ModSync1");
-    el->addTextElement(String(modSyncs[0]));
     
     
-    el = root.createNewChildElement("ModRate2");
-    el->addTextElement(String(modRateTargets[1]));
-    el = root.createNewChildElement("ModRateDial2");
-    el->addTextElement(String(modRateDials[1]));
-    el = root.createNewChildElement("ModDepth2");
-    el->addTextElement(String(modDepthTargets[1]));
-    el = root.createNewChildElement("ModSyncButton2");
-    el->addTextElement(String(modSyncButtons[1]));
-    el = root.createNewChildElement("ModSync2");
-    el->addTextElement(String(modSyncs[1]));
+//    MemoryOutputStream stream(destData, false);
+//    parameterManager->state.writeToStream(stream);
     
-    copyXmlToBinary(root, destData);
+//    XmlElement root("Root");
+//    XmlElement *el;
+//    el = root.createNewChildElement("Mix");
+//    el->addTextElement(String(mix));
+//    el = root.createNewChildElement("ModRate1");
+//    el->addTextElement(String(rateData[0]));
+//    el = root.createNewChildElement("ModRateDial1");
+//    el->addTextElement(String(modRateDials[0]));
+//    el = root.createNewChildElement("ModDepth1");
+//    el->addTextElement(String(depthData[0]));
+//    el = root.createNewChildElement("ModSyncButton1");
+//    el->addTextElement(String(syncFreeStates[0]));
+//    el = root.createNewChildElement("ModSync1");
+//    el->addTextElement(String(modSyncs[0]));
+//    
+//    
+//    el = root.createNewChildElement("ModRate2");
+//    el->addTextElement(String(rateData[1]));
+//    el = root.createNewChildElement("ModRateDial2");
+//    el->addTextElement(String(modRateDials[1]));
+//    el = root.createNewChildElement("ModDepth2");
+//    el->addTextElement(String(depthData[1]));
+//    el = root.createNewChildElement("ModSyncButton2");
+//    el->addTextElement(String(syncFreeStates[1]));
+//    el = root.createNewChildElement("ModSync2");
+//    el->addTextElement(String(modSyncs[1]));
+//    
+//    copyXmlToBinary(root, destData);
 }
 
-void TremuluxAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void TremuluxCore::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    XmlElement *pRoot = getXmlFromBinary(data, sizeInBytes);
-    if(pRoot != NULL){
-        forEachXmlChildElement((*pRoot), pChild){
-            if(pChild->hasTagName("Mix")){
-                String text = pChild->getAllSubText();
-                setParameter(MIX, text.getFloatValue());
-            }
-            
-            if(pChild->hasTagName("ModRate1")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_RATE1, text.getFloatValue());
-            }
-            if(pChild->hasTagName("ModRateDial1")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_RATE_DIAL1, text.getFloatValue());
-            }
-            if(pChild->hasTagName("ModDepth1")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_DEPTH1, text.getFloatValue());
-            }
-            if(pChild->hasTagName("ModSyncButton1")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_SYNC_BUTTON1, text.getFloatValue());
-            }
-            if(pChild->hasTagName("ModSync1")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_SYNC1, text.getFloatValue());
-            }
-            
-            
-            if(pChild->hasTagName("ModRate2")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_RATE2, text.getFloatValue());
-            }
-            if(pChild->hasTagName("ModRateDial2")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_RATE_DIAL2, text.getFloatValue());
-            }
-            if(pChild->hasTagName("ModDepth2")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_DEPTH2, text.getFloatValue());
-            }
-            if(pChild->hasTagName("ModSyncButton2")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_SYNC_BUTTON2, text.getFloatValue());
-            }
-            if(pChild->hasTagName("ModSync2")){
-                String text = pChild->getAllSubText();
-                setParameter(MOD_SYNC2, text.getFloatValue());
-            }
-        }
-        delete pRoot;
-    }
-    UIUpdateFlag = true; //Request UI update
+    
+//    ValueTree tree = ValueTree::readFromData(data, sizeInBytes);
+//    if (tree.isValid())
+//    {
+//        parameterManager->state = tree;
+//    }
+    
+//    XmlElement *pRoot = getXmlFromBinary(data, sizeInBytes);
+//    if(pRoot != NULL){
+//        forEachXmlChildElement((*pRoot), pChild){
+//            if(pChild->hasTagName("Mix")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MIX, text.getFloatValue());
+//            }
+//            
+//            if(pChild->hasTagName("ModRate1")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_RATE1, text.getFloatValue());
+//            }
+//            if(pChild->hasTagName("ModRateDial1")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_RATE_DIAL1, text.getFloatValue());
+//            }
+//            if(pChild->hasTagName("ModDepth1")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_DEPTH1, text.getFloatValue());
+//            }
+//            if(pChild->hasTagName("ModSyncButton1")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_SYNC_BUTTON1, text.getFloatValue());
+//            }
+//            if(pChild->hasTagName("ModSync1")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_SYNC1, text.getFloatValue());
+//            }
+//            
+//            
+//            if(pChild->hasTagName("ModRate2")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_RATE2, text.getFloatValue());
+//            }
+//            if(pChild->hasTagName("ModRateDial2")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_RATE_DIAL2, text.getFloatValue());
+//            }
+//            if(pChild->hasTagName("ModDepth2")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_DEPTH2, text.getFloatValue());
+//            }
+//            if(pChild->hasTagName("ModSyncButton2")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_SYNC_BUTTON2, text.getFloatValue());
+//            }
+//            if(pChild->hasTagName("ModSync2")){
+//                String text = pChild->getAllSubText();
+//                setParameter(MOD_SYNC2, text.getFloatValue());
+//            }
+//        }
+//        delete pRoot;
+//    }
+    uiUpdateData.store(true); //Request UI update
+}
+//==============================================================================
+// This creates new instances of the plugin..
+AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+{
+    return new TremuluxCore();
 }
 
-float TremuluxAudioProcessor::calcSyncedRate(const int mode, const int modID){
+
+//==============================================================================
+// Custom methods
+void TremuluxCore::setGUI(TremuluxGUI* frontend)
+{
+    gui = frontend;
+}
+
+float TremuluxCore::calcSyncedRate(const int mode, const int modID){
     float rate;
-    if(mode == TWO_BARS || mode == ONE_BAR){
+    const float bpm = lastBPM.load();
+    const unsigned int timeSigNumerator = lastTimeSigNumerator.load(),
+    timeSigDenominator = lastTimeSigDenominator.load();
+    if(mode == TWO_BARS || mode == ONE_BAR)
+    {
         float beat;
-        switch(lastTimeSigDenominator){
+        switch(timeSigDenominator){
             case 2:
                 beat = syncFactors[HALF];
                 break;
@@ -530,34 +519,39 @@ float TremuluxAudioProcessor::calcSyncedRate(const int mode, const int modID){
                 break;
             default:
                 //just to be safe?
+                assert(false);
                 beat = syncFactors[QUARTER];
                 break;
         }
-        rate = beat * lastBPM / lastTimeSigNumerator;
-        if(mode == TWO_BARS){
+        rate = beat * bpm / timeSigNumerator;
+        if(mode == TWO_BARS)
+        {
             rate *= 0.5;
         }
     }
-    else{
-        rate = syncFactors[mode] * lastBPM;
+    else
+    {
+        rate = syncFactors[mode] * bpm;
     }
     return rate;
 }
 
-float TremuluxAudioProcessor::calcRate(const float freqDialValue, const int modID){
+float TremuluxCore::calcRate(const float rateDialValue, const int modID){
     float rate;
-    if(modSyncButtons[modID]){
+    int mode = syncModeData[modID];
+    if(mode)
+    {
         //sync activated
-        int mode = modSyncs[modID];
         rate = calcSyncedRate(mode, modID);
     }
-    else{
-        rate = minFreeRate + (freqDialValue * oneOverFreqDialRange) * (maxFreeRate - minFreeRate);
+    else
+    {
+        rate = minFreeRate + (rateDialValue * oneOverFreqDialRange) * (maxFreeRate - minFreeRate);
     }
     return rate;
 }
 
-void TremuluxAudioProcessor::updateSyncedRates(const bool force)
+void TremuluxCore::updateSyncedRates(const bool force)
 {
     // Called at beginning of processBlock iff a mod is in sync mode
     // sets new modFreqTargets to reflect changes in tempo or time signature,
@@ -570,49 +564,483 @@ void TremuluxAudioProcessor::updateSyncedRates(const bool force)
     timeSigNumerator = transportInfo.timeSigNumerator;
     if(force || bpm != lastBPM ||
        timeSigDenominator != lastTimeSigDenominator ||
-       timeSigNumerator != lastTimeSigNumerator){
-        lastBPM = bpm;
-        lastTimeSigDenominator = timeSigDenominator;
-        lastTimeSigNumerator = timeSigNumerator;
-        
-        for(int m = 0; m < NUM_MODS; ++m)
+       timeSigNumerator != lastTimeSigNumerator)
+    {
+        lastBPM.store(bpm);
+        lastTimeSigDenominator.store(timeSigDenominator);
+        lastTimeSigNumerator.store(timeSigNumerator);
+    
+        for(int i = 0; i < NUM_MODS; ++i)
         {
-            int mode = modSyncs[m];
-            assert(mode > 0);
-            modRateTargets[m] = calcSyncedRate(mode, m);
-            if(modRateTargets[m] != modRates[m]){
-                mods[m].updateFreq(modRateTargets[m], modInterp);
-                
+            const int mode = syncModeData[i].load();
+            const float oldRate = rateData[i].load(),
+                        newRate = calcSyncedRate(mode, i);
+            if(oldRate != newRate)
+            {
+                mods[i].updateFreq(newRate, interpData);
             }
         }
-        updateLowPassCutOff();
     }
 }
 
-void TremuluxAudioProcessor::updateLowPassCutOff()
+void TremuluxCore::serialize(XmlElement& xml)
 {
-    float temp = 0;
-    for(int m = 0; m < NUM_MODS; ++m)
-    {
-        if(modRateTargets[m] > temp)
-        {
-            temp = modRateTargets[m];
-        }
-    }
-    if(temp != maxModRate)
-    {
-        maxModRate = temp;
-        const float samplingRate = getSampleRate(),
-        cutOff = samplingRate / 2 - (8000 + maxModRate * maxModRate);
-        for(int i = 0; i < NUM_LOWPASSES; ++i)
-        {
-            lowPasses[i].setCutOff(samplingRate, cutOff);
-        }
-    }
+    //    xml.setAttribute("CURRENT_FILE", getCurrentFilePath());
+//    xml.setAttribute("ANALYZING_STREAM", isAnalyzingStream());
+//    
+//    //==============================================================================
+//    
+//    // Feature set
+//    ScopedPointer<XmlElement> xmlFeatures = new XmlElement("FEATURES");
+//    
+//    unsigned int fId = 1;
+//    for(; fId < mir::NUM_FEATURES_PLUS_ONE; ++fId)
+//    {
+//        ScopedPointer<XmlElement> xmlFeatureInfo = new XmlElement("INFO");
+//        xmlFeatureInfo->setAttribute("F_ID", (int)fId);
+//        xmlFeatureInfo->setAttribute("NAME", featureSet[fId]);
+//        xmlFeatureInfo->setAttribute("MIN", featureSet.getMin(fId));
+//        xmlFeatureInfo->setAttribute("MAX", featureSet.getMax(fId));
+//        xmlFeatures->addChildElement(xmlFeatureInfo.release());
+//    }
+//    xml.addChildElement(xmlFeatures.release());
+//    
+//    //==============================================================================
+//    
+//    // Session
+//    ScopedPointer<XmlElement> xmlSession = new XmlElement("SESSION");
+//    
+//    if(messenger->publicSession != nullptr)
+//    {
+//        const String channelTypeTags[] = {"MASTER", "BUS", "SOURCE"};
+//        const Messenger::CHANNELTYPE channelTypes[] = {Messenger::CHANNELTYPE::MASTER, Messenger::CHANNELTYPE::BUS, Messenger::CHANNELTYPE::SOURCE};
+//        Messenger::CHANNELTYPE cType;
+//        
+//        for(unsigned int i = 0; i < Messenger::CHANNELTYPE::NUMCHANNELTYPES; i++)
+//        {
+//            //////////////////////////////////////
+//            // First MASTER, then BUS, then SOURCE
+//            cType = channelTypes[i];
+//            ScopedPointer<XmlElement> xmlChannelType = new XmlElement(channelTypeTags[i]);
+//            
+//            ///////////////////////////////////////////////////////////////////////////////////////
+//            // Master track's cId is -1, mixer's dId is -1, fader pId = -1, panner pId = -2,
+//            // JUCE menu item ids (keys) start at one (note preincrement on key below)
+//            // However, to make life easier while indexing these vectors, cId will start at 0 and
+//            // the offset will be taken care of during channel lookup.
+//            int cId = (cType == Messenger::CHANNELTYPE::MASTER)? -1 : 0;
+//            auto cwp = messenger->publicSession->getChannel(cId, cType);
+//            
+//            ////////////////////////////////////////////////////////////////////////
+//            // Iterating over channels of type channelTypes[i] (master, bus, source)
+//            
+//            while(!cwp.expired())
+//            {
+//                auto channel = cwp.lock();
+//                ScopedPointer<XmlElement> xmlChannel = new XmlElement("CHANNEL");
+//                xmlChannel->setAttribute("C_ID", cId);
+//                xmlChannel->setAttribute("NAME", channel->name);
+//                
+//                // All channels have mixers, though master channel has no sends
+//                int dId = -1, pId = -2;
+//                ScopedPointer<XmlElement> xmlMixerDevice = new XmlElement("DEVICE");
+//                xmlMixerDevice->setAttribute("D_ID", dId);
+//                xmlMixerDevice->setAttribute("NAME", "Mixer");
+//                
+//                ////////////////
+//                // Mixer
+//                // Using the session parameter query safely handles the mixer pIds
+//                auto pwp = messenger->publicSession->getParameter(cType, cId, dId, pId);
+//                while(!pwp.expired())
+//                {
+//                    //////////////////////////////////////////////////
+//                    // Mixer parameters (fader, panner, sends)
+//                    auto parameter = pwp.lock();
+//                    ScopedPointer<XmlElement> xmlParameter = new XmlElement("PARAMETER");
+//                    
+//                    xmlParameter->setAttribute("P_ID", parameter->parameterId);
+//                    xmlParameter->setAttribute("U_ID", parameter->uniqueId);
+//                    xmlParameter->setAttribute("NAME", parameter->name);
+//                    xmlParameter->setAttribute("TYPE", parameter->getParameterType());
+//                    xmlParameter->setAttribute("MIN", parameter->getMin());
+//                    xmlParameter->setAttribute("MAX", parameter->getMax());
+//                    
+//                    xmlMixerDevice->addChildElement(xmlParameter.release());
+//                    
+//                    pwp = messenger->publicSession->getParameter(cType, cId, dId, ++pId);
+//                }
+//                xmlChannel->addChildElement(xmlMixerDevice.release());
+//                
+//                /////////////////
+//                // Inserts
+//                
+//                ///////////////////////////////////////////////////////
+//                // All insert device dIds and parameter pIds start at 0
+//                dId = 0;
+//                auto dwp = channel->getDevice(dId);
+//                while(!dwp.expired())
+//                {
+//                    //////////
+//                    // Devices
+//                    auto device = dwp.lock();
+//                    ScopedPointer<XmlElement> xmlInsertDevice = new XmlElement("DEVICE");
+//                    xmlInsertDevice->setAttribute("D_ID", dId);
+//                    xmlInsertDevice->setAttribute("NAME", device->name);
+//                    
+//                    pId = 0;
+//                    pwp = device->getParameter(pId);
+//                    while(!pwp.expired())
+//                    {
+//                        /////////////
+//                        // Parameters
+//                        auto parameter = pwp.lock();
+//                        ScopedPointer<XmlElement> xmlParameter = new XmlElement("PARAMETER");
+//                        
+//                        xmlParameter->setAttribute("P_ID", parameter->parameterId);
+//                        xmlParameter->setAttribute("U_ID", parameter->uniqueId);
+//                        xmlParameter->setAttribute("NAME", parameter->name);
+//                        xmlParameter->setAttribute("TYPE", parameter->getParameterType());
+//                        xmlParameter->setAttribute("MIN", parameter->getMin());
+//                        xmlParameter->setAttribute("MAX", parameter->getMax());
+//                        
+//                        xmlInsertDevice->addChildElement(xmlParameter.release());
+//                        
+//                        ///////////////////////////////////////////////
+//                        // Move on to the next parameter on this device
+//                        pwp = device->getParameter(++pId);
+//                    }
+//                    //////////////////////////////////////////////////
+//                    // We've scanned all the parameters on this device
+//                    xmlChannel->addChildElement(xmlInsertDevice.release());
+//                    
+//                    /////////////////////////////////////////////
+//                    // Move on to the next device on this channel
+//                    dwp = channel->getDevice(++dId);
+//                }
+//                ////////////////////////////////////////////////
+//                // We've scanned all the devices on this channel
+//                xmlChannelType->addChildElement(xmlChannel.release());
+//                
+//                ///////////////////////////////////////////////
+//                // Move on to the next channel in this category
+//                cwp = messenger->publicSession->getChannel(++cId, cType);
+//            }
+//            //////////////////////////////////////////////////
+//            // We've scanned all the channels in this category
+//            xmlSession->addChildElement(xmlChannelType.release());
+//            ///////////////////////////////////
+//            // ... move on to the next category
+//        }
+//    }
+//    xml.addChildElement(xmlSession.release());
+//    
+//    //==============================================================================
+//    
+//    // Mapping matrix
+//    ScopedPointer<XmlElement> xmlMappingMatrix = new XmlElement("MAPPING_MATRIX");
+//    mappingMatrix.serialize(*xmlMappingMatrix);
+//    xml.addChildElement(xmlMappingMatrix.release());
+    
+    //==============================================================================
+    //==============================================================================
+    
+    //DEBUG
+    //    File stateFile(APPDIR_PATH + "/temp/state/instance" + String(instanceId) + "_serialized.tremulux");
+    //    if(stateFile.create().wasOk())
+    //    {
+    //         xml.writeToFile(stateFile, "");
+    //    }
 }
-//==============================================================================
-// This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+
+void TremuluxCore::deserialize(XmlElement& xml)
 {
-    return new TremuluxAudioProcessor();
+    
+    //DEBUG
+    //    File stateFile(APPDIR_PATH + "/temp/state/instance" + String(instanceId) + "_deserialized.tremulux");
+    //    if(stateFile.create().wasOk())
+    //    {
+    //        xml.writeToFile(stateFile, "");
+    //    }
+    
+//    const String filename = xml.getStringAttribute("CURRENT_FILE");
+//    if(filename != "")
+//    {
+//        setCurrentFilePath(filename);
+//        loadFile(true);
+//    }
+//    
+//    //==============================================================================
+//    
+//    XmlElement* xmlInfo;
+//    
+//    //==============================================================================
+//    
+//    // Feature set
+//    XmlElement* xmlFeatures = xml.getChildByName("FEATURES");
+//    if(xmlFeatures != nullptr)
+//    {
+//        xmlInfo = xmlFeatures->getFirstChildElement();
+//        
+//        unsigned int fId = 1;
+//        for(; fId < mir::NUM_FEATURES_PLUS_ONE; ++fId)
+//        {
+//            const int recordedFId = xmlInfo->getIntAttribute("F_ID");
+//            assert(fId == recordedFId);
+//            featureSet.setMin(fId, xmlInfo->getDoubleAttribute("MIN"));
+//            featureSet.setMax(fId, xmlInfo->getDoubleAttribute("MAX"));
+//            xmlInfo = xmlInfo->getNextElement();
+//        }
+//    }
+//    
+//    // Session
+//    std::map<unsigned int, unsigned int> brokenUIDs;
+//    // TODO: alert user when current session doesn't match saved state
+//    
+//    XmlElement* xmlSession = xml.getChildByName("SESSION");
+//    if(xmlSession != nullptr)
+//    {
+//        if(messenger->publicSession == nullptr)
+//        {
+//            messenger->publicSession = new daw::Session();
+//        }
+//        else
+//        {
+//            messenger->publicSession->reset();
+//        }
+//        const String channelTypeTags[] = {"MASTER", "BUS", "SOURCE"};
+//        const Messenger::CHANNELTYPE channelTypes[] = {Messenger::CHANNELTYPE::MASTER, Messenger::CHANNELTYPE::BUS, Messenger::CHANNELTYPE::SOURCE};
+//        Messenger::CHANNELTYPE cType;
+//        
+//        for(unsigned int i = 0; i < Messenger::CHANNELTYPE::NUMCHANNELTYPES; ++i)
+//        {
+//            //////////////////////////////////////
+//            // First MASTER, then BUS, then SOURCE
+//            cType = channelTypes[i];
+//            XmlElement* xmlChannelType = xmlSession->getChildByName(channelTypeTags[i]);
+//            
+//            if(xmlChannelType != nullptr)
+//            {
+//                ///////////////////////////////////////////////////////////////////////////////////////
+//                // Master track's cId is -1, mixer's dId is -1, fader pId = -1, panner pId = -2,
+//                // JUCE menu item ids (keys) start at one (note preincrement on key below)
+//                // However, to make life easier while indexing these vectors, cId will start at 0 and
+//                // the offset will be taken care of during channel lookup.
+//                
+//                if(cType == Messenger::CHANNELTYPE::BUS)
+//                {
+//                    const unsigned int numBuses = xmlChannelType->getNumChildElements();
+//                    messenger->publicSession->setExpectedNumBuses(numBuses);
+//                }
+//                else if(cType == Messenger::CHANNELTYPE::SOURCE)
+//                {
+//                    const unsigned int numSources = xmlChannelType->getNumChildElements();
+//                    messenger->publicSession->setExpectedNumSources(numSources);
+//                }
+//                
+//                ////////////////////////////////////////////////////////////////////////
+//                // Iterating over channels of type channelTypes[i] (master, bus, source)
+//                XmlElement* xmlChannel = xmlChannelType->getChildByName("CHANNEL");
+//                while(xmlChannel != nullptr)
+//                {
+//                    const String cName = xmlChannel->getStringAttribute("NAME");
+//                    int cId = xmlChannel->getIntAttribute("C_ID"), dId = -1, pId;
+//                    
+//                    // Master track already exists, so we don't insert a new channel in that case
+//                    if(cType != Messenger::CHANNELTYPE::MASTER)
+//                    {
+//                        // All channels have mixers, though master channel has no sends
+//                        // Fader, Panner, and Send parameters are handled when channel is inserted
+//                        messenger->publicSession->addChannel(cType, cId, cName.toStdString());
+//                    }
+//                    ////////////////
+//                    // Mixer
+//                    // Need to rectify potential uniqueID mismatches
+//                    
+//                    XmlElement* xmlMixerDevice = xmlChannel->getChildByName("DEVICE");
+//                    XmlElement* xmlParameter = xmlMixerDevice->getChildByName("PARAMETER");
+//                    while(xmlParameter != nullptr)
+//                    {
+//                        //////////////////////////////////////////////////
+//                        // Mixer parameters (fader, panner, sends)
+//                        pId = xmlParameter->getIntAttribute("P_ID");
+//                        auto pwp = messenger->publicSession->getParameter(cType, cId, dId, pId);
+//                        
+//                        if(pwp.expired())
+//                        {
+//                            throw std::exception();
+//                        }
+//                        
+//                        auto psp = pwp.lock();
+//                        const unsigned int recordedUId = xmlParameter->getIntAttribute("U_ID"),
+//                        newUID = psp->uniqueId;
+//                        
+//                        if(recordedUId != newUID)
+//                        {
+//                            brokenUIDs.insert(std::pair<unsigned int, unsigned int>(recordedUId, newUID));
+//                        }
+//                        xmlParameter = xmlParameter->getNextElement();
+//                    }
+//                    
+//                    /////////////////
+//                    // Inserts
+//                    
+//                    ///////////////////////////////////////////////////////
+//                    // All insert device dIds and parameter pIds start at 0
+//                    
+//                    const unsigned int numInserts = xmlChannel->getNumChildElements() - 1;
+//                    if(numInserts)
+//                    {
+//                        XmlElement* xmlInsertDevice = xmlChannel->getChildElement(1);
+//                        
+//                        while(xmlInsertDevice != nullptr)
+//                        {
+//                            dId = xmlInsertDevice->getIntAttribute("D_ID");
+//                            const String dName = xmlInsertDevice->getStringAttribute("NAME");
+//                            messenger->publicSession->addDevice(cType, cId, dId, dName.toStdString());
+//                            
+//                            XmlElement* xmlParameter = xmlInsertDevice->getChildByName("PARAMETER");
+//                            while(xmlParameter != nullptr)
+//                            {
+//                                pId = xmlParameter->getIntAttribute("P_ID");
+//                                messenger->publicSession->addParameter(cType,
+//                                                                       (daw::Parameter::PARAMETERTYPE)xmlParameter->getIntAttribute("TYPE"),
+//                                                                       cId, dId, pId,
+//                                                                       xmlParameter->getStringAttribute("NAME").toStdString(), 0.0f);
+//                                messenger->publicSession->addParameterRange(cType,
+//                                                                            cId, dId, pId,
+//                                                                            xmlParameter->getDoubleAttribute("MIN"),
+//                                                                            xmlParameter->getDoubleAttribute("MAX"));
+//                                auto pwp = messenger->publicSession->getParameter(cType, cId, dId, pId);
+//                                auto psp = pwp.lock();
+//                                const int recordedUId = xmlParameter->getIntAttribute("U_ID"),
+//                                newUID = psp->uniqueId;
+//                                
+//                                if(recordedUId != newUID)
+//                                {
+//                                    brokenUIDs.insert(std::pair<unsigned int, unsigned int>(recordedUId, newUID));
+//                                }
+//                                
+//                                //////////////////////////////////////////////////
+//                                // Move on to the next parameter on this device
+//                                xmlParameter = xmlParameter->getNextElement();
+//                            }
+//                            /////////////////////////////////////////////
+//                            // Move on to the next device on this channel
+//                            xmlInsertDevice = xmlInsertDevice->getNextElement();
+//                        }
+//                    }
+//                    ///////////////////////////////////////////////
+//                    // Move on to the next channel in this category
+//                    xmlChannel = xmlChannel->getNextElement();
+//                }
+//                ///////////////////////////////////
+//                // ... move on to the next category
+//            }
+//        }
+//    }
+//    
+//    //==============================================================================
+//    
+//    // Mapping matrix
+//    
+//    XmlElement* xmlMappingMatrix = xml.getChildByName("MAPPING_MATRIX"),
+//    * xmlActiveFeatures = xmlMappingMatrix->getChildByName("ACTIVE_FEATURES"),
+//    * xmlActiveParameters = xmlMappingMatrix->getChildByName("ACTIVE_PARAMETERS"),
+//    * xmlMappings = xmlMappingMatrix->getChildByName("MAPPINGS");
+//    
+//    // Active features
+//    if(xmlActiveFeatures != nullptr)
+//    {
+//        xmlInfo = xmlActiveFeatures->getChildByName("INFO");
+//        while(xmlInfo != nullptr)
+//        {
+//            mappingMatrix.insertFeature(featureSet.at(xmlInfo->getIntAttribute("F_ID")));
+//            xmlInfo = xmlInfo->getNextElementWithTagName("INFO");
+//        }
+//    }
+//    if(xmlActiveParameters != nullptr)
+//    {
+//        // Active parameters
+//        xmlInfo = xmlActiveParameters->getChildByName("INFO");
+//        while(xmlInfo != nullptr)
+//        {
+//            unsigned int uId = xmlInfo->getIntAttribute("U_ID");
+//            // This is where we need to be careful
+//            if(brokenUIDs.find(uId) != brokenUIDs.end())
+//            {
+//                uId = brokenUIDs.at(uId);
+//            }
+//            mappingMatrix.insertParameter(messenger->publicSession->getParameter(uId));
+//            xmlInfo = xmlInfo->getNextElementWithTagName("INFO");
+//        }
+//    }
+//    
+//    // Mappings
+//    const int numRows = mappingMatrix.getNumRows(),
+//    numCols = mappingMatrix.getNumCols();
+//    
+//    if(xmlMappings != nullptr)
+//    {
+//        xmlInfo = xmlMappings->getChildByName("MAPPING");
+//        if(xmlInfo != nullptr)
+//        {
+//            for(unsigned int r = 0; r < numRows; ++r)
+//            {
+//                for(unsigned int c = 0; c < numCols; ++c)
+//                {
+//                    auto msp = mappingMatrix.at(r, c);
+//                    
+//                    // From
+//                    msp->setLimits("from", xmlInfo->getDoubleAttribute("FROM_LIMIT_START"),
+//                                   xmlInfo->getDoubleAttribute("FROM_LIMIT_END"));
+//                    msp->setRange("from", xmlInfo->getDoubleAttribute("FROM_RANGE_START"),
+//                                  xmlInfo->getDoubleAttribute("FROM_RANGE_END"));
+//                    msp->setSkewAmount("from", xmlInfo->getBoolAttribute("FROM_SKEWED"),
+//                                       xmlInfo->getDoubleAttribute("FROM_SKEW"));
+//                    
+//                    // To
+//                    msp->setLimits("to", xmlInfo->getDoubleAttribute("TO_LIMIT_START"),
+//                                   xmlInfo->getDoubleAttribute("TO_LIMIT_END"));
+//                    msp->setRange("to", xmlInfo->getDoubleAttribute("TO_RANGE_START"),
+//                                  xmlInfo->getDoubleAttribute("TO_RANGE_END"));
+//                    msp->setSkewAmount("to", xmlInfo->getBoolAttribute("TO_SKEWED"),
+//                                       xmlInfo->getDoubleAttribute("TO_SKEW"));
+//                    
+//                    // Other
+//                    msp->setPolarity(xmlInfo->getBoolAttribute("POLARITY"));
+//                    if(xmlInfo->getBoolAttribute("DISCRETIZED"))
+//                    {
+//                        msp->setDiscretizationSteps(true, xmlInfo->getIntAttribute("STEPS"));
+//                    }
+//                    else
+//                    {
+//                        msp->setDiscretizationSteps(false);
+//                    }
+//                    msp->setSmoothing(xmlInfo->getDoubleAttribute("SMOOTHING"));
+//                    if(xmlInfo->getBoolAttribute("ACTIVE"))
+//                    {
+//                        msp->activate();
+//                    }
+//                    else
+//                    {
+//                        msp->deactivate();
+//                    }
+//                    xmlInfo = xmlInfo->getNextElementWithTagName("MAPPING");
+//                }
+//            }
+//        }
+//        mappingMatrix.update();
+//    }
+//    
+//    if(xml.getBoolAttribute("ANALYZING_STREAM"))
+//    {
+//        if(mir::isInitialized())
+//        {
+//            analyzingStream.set(true);
+//        }
+//        else
+//        {
+//            AlertWindow::showMessageBox(AlertWindow::NoIcon, "Preset Error", "Could not activate TREMULUX");
+//        }
+//    }
 }

@@ -12,66 +12,24 @@
 #define PLUGINPROCESSOR_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "Oscillator.h"
+#include "tremulux_include.h"
 #include "Filter.h"
-#include <array>
+#include "Oscillator.h"
 
-const int NUM_MODS = 2,
-          NUM_LOWPASSES = 3,
-          OUTPUT_SCALING_FACTOR = 1.0 / (NUM_MODS + 1);
+
+using namespace tremulux;
+
+class TremuluxGUI;
+
 //==============================================================================
 /**
 */
 
-
-
-class TremuluxAudioProcessor  : public AudioProcessor{
+class TremuluxCore  : public AudioProcessor, public AudioProcessorValueTreeState::Listener
+{
 public:
-    //==============================================================================
-    TremuluxAudioProcessor();
-    ~TremuluxAudioProcessor();
-
-    //==============================================================================
-    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
-    void releaseResources() override;
-
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
-
-    //==============================================================================
-    AudioProcessorEditor* createEditor() override;
-    bool hasEditor() const override;
-
-    //==============================================================================
-    const String getName() const override;
-
-    int getNumParameters() override;
-    float getParameter (int index) override;
-    void setParameter (int index, float newValue) override;
-
-    const String getParameterName (int index) override;
-    const String getParameterText (int index) override;
-
-    const String getInputChannelName (int channelIndex) const override;
-    const String getOutputChannelName (int channelIndex) const override;
-    bool isInputChannelStereoPair (int index) const override;
-    bool isOutputChannelStereoPair (int index) const override;
-
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    bool silenceInProducesSilenceOut() const override;
-    double getTailLengthSeconds() const override;
-
-    //==============================================================================
-    int getNumPrograms() override;
-    int getCurrentProgram() override;
-    void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
-
-    //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
-    void setStateInformation (const void* data, int sizeInBytes) override;
-
+    friend class TremuluxGUI;
+    
     typedef enum {
         MOD_RATE1 = 0,
         MOD_RATE_DIAL1,
@@ -107,55 +65,146 @@ public:
         
         NUM_SYNC_OPTIONS
     } SYNC_OPTIONS;
-
+    
     const float freqDialRange = NUM_SYNC_OPTIONS - 1;
     const float oneOverFreqDialRange = 1.0 / freqDialRange;
     const float minFreeRate = 0.1, maxFreeRate = 10.0;
+
+    //==============================================================================
+    TremuluxCore();
+    ~TremuluxCore();
+
+    //==============================================================================
+    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    void releaseResources() override;
+
+    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+
+    //==============================================================================
+    AudioProcessorEditor* createEditor() override;
+    bool hasEditor() const override;
+
+    //==============================================================================
+    const String getName() const override;
+
+//    int getNumParameters() override;
+//    float getParameter (int index) override;
+//    void setParameter (int index, float newValue) override;
+//
+//    const String getParameterName (int index) override;
+//    const String getParameterText (int index) override;
+
+    const String getInputChannelName (int channelIndex) const override;
+    const String getOutputChannelName (int channelIndex) const override;
+    bool isInputChannelStereoPair (int index) const override;
+    bool isOutputChannelStereoPair (int index) const override;
+
+    bool acceptsMidi() const override;
+    bool producesMidi() const override;
+    bool silenceInProducesSilenceOut() const override;
+    double getTailLengthSeconds() const override;
+
+    //==============================================================================
+    
+    void parameterChanged(const String &parameterID, float newValue) override;
+    
+    int getNumPrograms() override;
+    int getCurrentProgram() override;
+    void setCurrentProgram (int index) override;
+    const String getProgramName (int index) override;
+    void changeProgramName (int index, const String& newName) override;
+
+    //==============================================================================
+    void getStateInformation (MemoryBlock& destData) override;
+    void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    AudioProcessorValueTreeState& getParameterManager();
+
+    //==============================================================================
+    
+    void setGUI(TremuluxGUI* frontend);
+    void clear();
+
+    bool NeedsUIUpdate(){return uiUpdateData.load();};
+    void ClearUIUpdateFlag(){uiUpdateData.store(false);};
+    void RaiseUIUpdateFlag(){uiUpdateData.store(true);};
+    
     StringArray syncModeLabels;
     
-    
-    bool NeedsUIUpdate(){return UIUpdateFlag;};
-    void ClearUIUpdateFlag(){UIUpdateFlag = false;};
-    void RaiseUIUpdateFlag(){UIUpdateFlag = true;};
-    
-    const float getMix() const{return mix;}
-    const float getModDepth(const unsigned int modIdx) const{return mods[modIdx].getAmplitude();}
-    const float getModRate(const unsigned int modIdx) const{return mods[modIdx].getFrequency();}
+    //==============================================================================
+
+    void serialize(XmlElement& xml);
+
+    void deserialize(XmlElement& xml);
+
+    //==============================================================================
+
+protected:
+    TremuluxGUI* gui;
+    CriticalSection callbackLock;
     
 private:
-    float mix;
-
-    unsigned int modInterp;
-    float modRateDials[NUM_MODS];
-    float modRateTargets[NUM_MODS];
-    float modRates[NUM_MODS];
+    
     void updateSyncedRates(const bool force = false);
-    void updateLowPassCutOff();
-
+    
     float calcSyncedRate(const int mode, const int modID);
     float calcRate(const float freqDialValue, const int modID);
     
-    float modDepthTargets[NUM_MODS];
+    //==============================================================================
 
-    shared_ptr<Wavetable<float> > sineTable;
+    File logFile;
+    FileLogger logger;
+    
+    float sampleRate, maxModRate;
+    bool isStereo;
+    
+    std::shared_ptr<Wavetable<float> > sineTable;
     std::array<Sine<float>, NUM_MODS> mods;
-    std::array<LowPass<float>, NUM_LOWPASSES> lowPasses;
+    std::array<LowPass<float>, NUM_MODS> lowPasses;
+    
+    //==============================================================================
+    // Parameters
+    
+    ScopedPointer<UndoManager> undoManager;
+    ScopedPointer<AudioProcessorValueTreeState> parameterManager;
+    
+    static String mixParamID;
+    static String bypassParamID;
+    static String gainParamID;
+    static String rateParamID[2];
+    static String depthParamID[2];
+    static String syncModeParamID[2];
+    
+    AudioParameterFloat
+//    * freeRateParam1, * freeRateParam2,
+//    * depthParam1, * depthParam2,
+    * mixParam, * gainParam;
+//
+//    AudioParameterInt
+//    * syncRateParam1, * syncRateParam2;
+    
+    AudioParameterBool
+//    * syncFreeParam1, * syncFreeParam2,
+    * bypassParam;
+    
+    std::atomic<bool> uiUpdateData, bypassData;
+    std::atomic<float> mixData, gainData;
+    std::atomic<unsigned int> interpData;
+    std::array<std::atomic<float>, NUM_MODS> rateData;
+    std::array<std::atomic<float>, NUM_MODS> depthData;
+    std::array<std::atomic<SYNC_OPTIONS>, NUM_MODS> syncModeData;
+
+    //==============================================================================
+    // Tempo Sync
     
     AudioPlayHead *transport;
     juce::AudioPlayHead::CurrentPositionInfo transportInfo;
-
-
     std::array<float, NUM_SYNC_OPTIONS> syncFactors;
-    std::array<unsigned int, NUM_MODS> modSyncButtons;
-    std::array<SYNC_OPTIONS, NUM_MODS> modSyncs;
-    float lastBPM;
-    float maxModRate;
-    unsigned int lastTimeSigDenominator, lastTimeSigNumerator;
+    std::atomic<float> lastBPM;
+    std::atomic<unsigned int> lastTimeSigDenominator, lastTimeSigNumerator;
     
-    //automation/preset stuff
-    bool UIUpdateFlag;
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TremuluxAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TremuluxCore)
 };
 
 

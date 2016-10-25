@@ -1,18 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated GUI class created by the Introjucer!
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Introjucer version: 3.1.1
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Introjucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-13 by Raw Material Software Ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
@@ -30,6 +30,9 @@
 PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
     : AudioProcessorEditor (&p), processor (p)
 {
+    //[Constructor_pre] You can add your own custom stuff here..
+    //[/Constructor_pre]
+
     addAndMakeVisible (modRateDial1 = new Slider ("new slider"));
     modRateDial1->setRange (0, 1, 0);
     modRateDial1->setSliderStyle (Slider::Rotary);
@@ -189,7 +192,7 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
 
 
     //[Constructor] You can add your own custom stuff here..
-    setRateDialRanges(processor.freqDialRange);
+//    setRateDialRanges(processor.freqDialRange);
     /*typedef enum {
      OFF = 0,
 
@@ -209,19 +212,19 @@ PluginInterface::PluginInterface (TremuluxAudioProcessor& p)
      NUM_SYNC_OPTIONS
      } SYNC_OPTIONS;*/
 
-    
-    mix->setValue(p.getMix());
-    //sliderValueChanged(mix);
 
-    modDepth1->setValue(p.getModDepth(0));
-    modSyncButton1->setToggleState(true, juce::NotificationType::sendNotification);
-    modRateDial1->setValue(p.getModRate(0));
-
-    modDepth2->setValue(p.getModDepth(1));
-    modSyncButton2->setToggleState(true, juce::NotificationType::sendNotification);
-    modRateDial2->setValue(p.getModDepth(1));
-
-    startTimer(200);
+//    mix->setValue(p.getMix());
+//    //sliderValueChanged(mix);
+//
+//    modDepth1->setValue(p.getModDepth(0));
+//    modSyncButton1->setToggleState(true, juce::NotificationType::sendNotification);
+//    modRateDial1->setValue(p.getModRate(0));
+//
+//    modDepth2->setValue(p.getModDepth(1));
+//    modSyncButton2->setToggleState(true, juce::NotificationType::sendNotification);
+//    modRateDial2->setValue(p.getModDepth(1));
+//
+//    startTimer(200);
     //[/Constructor]
 }
 
@@ -490,7 +493,7 @@ void PluginInterface::sliderValueChanged (Slider* sliderThatWasMoved)
         displayText = (currentlySynced)?processor.syncModeLabels.getReference(mode):
         String(processor.minFreeRate + (freqDialValue * processor.oneOverFreqDialRange) * (processor.maxFreeRate - processor.minFreeRate), 2) + " Hz";
         modFreqText1->setText(displayText, juce::NotificationType::sendNotification);
-        
+
         //[/UserSliderCode_modRateDial1]
     }
     else if (sliderThatWasMoved == modDepth1)
@@ -629,9 +632,9 @@ void PluginInterface::visibilityChanged(){
 
 //==============================================================================
 #if 0
-/*  -- Introjucer information section --
+/*  -- Projucer information section --
 
-    This is where the Introjucer stores the metadata that describe this GUI layout, so
+    This is where the Projucer stores the metadata that describe this GUI layout, so
     make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
@@ -666,7 +669,7 @@ BEGIN_JUCER_METADATA
           virtualName="" explicitFocusOrder="0" pos="24 112 56 56" rotarysliderfill="ff401010"
           rotaryslideroutline="ff401010" min="0" max="1" int="0" style="Rotary"
           textBoxPos="NoTextBox" textBoxEditable="0" textBoxWidth="80"
-          textBoxHeight="20" skewFactor="1"/>
+          textBoxHeight="20" skewFactor="1" needsCallback="1"/>
   <LABEL name="new label" id="55db614b1ede7601" memberName="label" virtualName=""
          explicitFocusOrder="0" pos="0 72 100% 24" posRelativeX="6f801a8b6732fcf6"
          posRelativeY="6f801a8b6732fcf6" posRelativeW="6f801a8b6732fcf6"
@@ -679,7 +682,8 @@ BEGIN_JUCER_METADATA
           posRelativeY="6f801a8b6732fcf6" posRelativeW="6f801a8b6732fcf6"
           posRelativeH="6f801a8b6732fcf6" rotarysliderfill="ff401010" rotaryslideroutline="ff401010"
           min="0" max="1" int="0" style="Rotary" textBoxPos="NoTextBox"
-          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1"
+          needsCallback="1"/>
   <LABEL name="new label" id="d9460c7a1c6e8f0b" memberName="label2" virtualName=""
          explicitFocusOrder="0" pos="0 72 100% 24" posRelativeX="ef41dbafc2b42ab0"
          posRelativeY="ef41dbafc2b42ab0" posRelativeW="ef41dbafc2b42ab0"
@@ -691,7 +695,7 @@ BEGIN_JUCER_METADATA
           explicitFocusOrder="0" pos="248 176 64 64" trackcol="ffffe4c4"
           rotarysliderfill="ff401010" rotaryslideroutline="ff401010" min="0"
           max="1" int="0" style="Rotary" textBoxPos="NoTextBox" textBoxEditable="1"
-          textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+          textBoxWidth="80" textBoxHeight="20" skewFactor="1" needsCallback="1"/>
   <LABEL name="new label" id="4424775d4d900f55" memberName="label5" virtualName=""
          explicitFocusOrder="0" pos="0 80 100% 24" posRelativeX="eb5c080c6c96c98c"
          posRelativeY="eb5c080c6c96c98c" posRelativeW="eb5c080c6c96c98c"
@@ -703,7 +707,7 @@ BEGIN_JUCER_METADATA
           virtualName="" explicitFocusOrder="0" pos="24 240 56 56" rotarysliderfill="ff401010"
           rotaryslideroutline="ff401010" min="0" max="100" int="0" style="Rotary"
           textBoxPos="NoTextBox" textBoxEditable="1" textBoxWidth="80"
-          textBoxHeight="20" skewFactor="1"/>
+          textBoxHeight="20" skewFactor="1" needsCallback="1"/>
   <LABEL name="new label" id="75705ee4a87a546f" memberName="label6" virtualName=""
          explicitFocusOrder="0" pos="0 72 100% 24" posRelativeX="ec1ad9429a64df37"
          posRelativeY="ec1ad9429a64df37" posRelativeW="6f801a8b6732fcf6"
@@ -716,7 +720,8 @@ BEGIN_JUCER_METADATA
           posRelativeY="ec1ad9429a64df37" posRelativeW="ec1ad9429a64df37"
           posRelativeH="ec1ad9429a64df37" rotarysliderfill="ff401010" rotaryslideroutline="ff401010"
           min="0" max="1" int="0" style="Rotary" textBoxPos="NoTextBox"
-          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1"
+          needsCallback="1"/>
   <LABEL name="new label" id="fe72734cb4e58011" memberName="label7" virtualName=""
          explicitFocusOrder="0" pos="0 72 100% 24" posRelativeX="f1fb1887848bb254"
          posRelativeY="f1fb1887848bb254" posRelativeW="f1fb1887848bb254"

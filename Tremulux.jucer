@@ -11,15 +11,37 @@
               pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="4.2.4"
               buildAUv3="0" pluginIsMidiEffectPlugin="0">
   <MAINGROUP id="B1RSVG" name="Tremulux">
+    <GROUP id="{DBBCDDFE-75BF-4BB8-4E25-5FD657964791}" name="Tremulux">
+      <FILE id="t0xjKZ" name="tremulux_include.cpp" compile="1" resource="0"
+            file="Shared/tremulux_include.cpp"/>
+      <FILE id="VK3nSl" name="tremulux_include.h" compile="0" resource="0"
+            file="Shared/tremulux_include.h"/>
+      <FILE id="Ql82dn" name="tremuluxCore.cpp" compile="1" resource="0"
+            file="Shared/tremuluxCore.cpp"/>
+      <FILE id="QflQRG" name="tremuluxCore.h" compile="0" resource="0" file="Shared/tremuluxCore.h"/>
+    </GROUP>
+    <GROUP id="{B40ECA8D-3CB0-502A-2985-78BAFA614510}" name="GUI">
+      <FILE id="xg8ro6" name="tremuluxGUI.cpp" compile="1" resource="0" file="Shared/tremuluxGUI.cpp"/>
+      <FILE id="s6kQqU" name="tremuluxGUI.h" compile="0" resource="0" file="Shared/tremuluxGUI.h"/>
+    </GROUP>
+    <GROUP id="{F794A645-D46A-95CB-87EF-26B90F409CF3}" name="Resources">
+      <FILE id="fM6Gbn" name="flatLookAndFeel.cpp" compile="1" resource="0"
+            file="../shared/flatLookAndFeel.cpp"/>
+      <FILE id="CifAm2" name="flatLookAndFeel.h" compile="0" resource="0"
+            file="../shared/flatLookAndFeel.h"/>
+      <FILE id="lH0rFg" name="utilities.cpp" compile="1" resource="0" file="../shared/utilities.cpp"/>
+      <FILE id="GWC15Y" name="utilities.h" compile="0" resource="0" file="../shared/utilities.h"/>
+      <FILE id="rrLjVl" name="resources.cpp" compile="1" resource="0" file="../shared/ui/resources.cpp"/>
+      <FILE id="NJSDRt" name="resources.h" compile="0" resource="0" file="../shared/ui/resources.h"/>
+    </GROUP>
     <GROUP id="{95E9AEC1-4244-771A-2705-5F578DEECC3D}" name="AudioLibrary">
       <FILE id="qF6Eby" name="Filter.h" compile="0" resource="0" file="../libogc/include/Filter.h"/>
       <FILE id="n7B4Qx" name="Oscillator.h" compile="0" resource="0" file="../libogc/include/Oscillator.h"/>
     </GROUP>
     <GROUP id="{3A73246B-A72F-AD0F-5F91-18AE3E56E148}" name="Source">
-      <FILE id="CbYr3n" name="PluginInterface.cpp" compile="1" resource="0"
-            file="Source/PluginInterface.cpp"/>
-      <FILE id="sXIfQA" name="PluginInterface.h" compile="0" resource="0"
-            file="Source/PluginInterface.h"/>
+      <FILE id="FkNGGI" name="PluginEditor.cpp" compile="1" resource="0"
+            file="Source/PluginEditor.cpp"/>
+      <FILE id="i8x6E8" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
       <FILE id="P9TY7i" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="qSYFsS" name="PluginProcessor.h" compile="0" resource="0"
