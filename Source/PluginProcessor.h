@@ -31,26 +31,7 @@ public:
     friend class TremuluxGUI;
     
     typedef enum {
-        MOD_RATE1 = 0,
-        MOD_RATE_DIAL1,
-        MOD_DEPTH1,
-        MOD_SYNC_BUTTON1,
-        MOD_SYNC1,
-        
-        MOD_RATE2,
-        MOD_RATE_DIAL2,
-        MOD_DEPTH2,
-        MOD_SYNC_BUTTON2,
-        MOD_SYNC2,
-        
-        MIX,
-        NUM_PARAMS
-    } PARAMS;
-    
-    typedef enum {
-        OFF = 0,
-        
-        TWO_BARS,
+        TWO_BARS = 0,
         ONE_BAR,
         HALF,
         DOTTED_QUARTER,
@@ -66,9 +47,9 @@ public:
         NUM_SYNC_OPTIONS
     } SYNC_OPTIONS;
     
-    const float freqDialRange = NUM_SYNC_OPTIONS - 1;
-    const float oneOverFreqDialRange = 1.0 / freqDialRange;
-    const float minFreeRate = 0.1, maxFreeRate = 10.0;
+    const float RATE_DIAL_RANGE = NUM_SYNC_OPTIONS - 1;
+    const float ONE_BY_RATE_DIAL_RANGE = 1.0 / RATE_DIAL_RANGE;
+    const float MIN_FREE_RATE = 0.1, MAX_FREE_RATE = 10.0;
 
     //==============================================================================
     TremuluxCore();
@@ -124,10 +105,6 @@ public:
     
     void setGUI(TremuluxGUI* frontend);
     void clear();
-
-    bool NeedsUIUpdate(){return uiUpdateData.load();};
-    void ClearUIUpdateFlag(){uiUpdateData.store(false);};
-    void RaiseUIUpdateFlag(){uiUpdateData.store(true);};
     
     StringArray syncModeLabels;
     
@@ -145,10 +122,11 @@ protected:
     
 private:
     
-    void updateSyncedRates(const bool force = false);
-    
-    float calcSyncedRate(const int mode, const int modID);
-    float calcRate(const float freqDialValue, const int modID);
+    void updateTempo(const bool force = false);
+    inline int getSyncMode(const int modID);
+    float getSyncedRate(const int modID);
+    float getUnsyncedRate(const int modID);
+    void updateRates();
     
     //==============================================================================
 
@@ -171,28 +149,17 @@ private:
     static String mixParamID;
     static String bypassParamID;
     static String gainParamID;
-    static String rateParamID[2];
-    static String depthParamID[2];
-    static String syncModeParamID[2];
+    static String rateParamID[NUM_MODS];
+    static String depthParamID[NUM_MODS];
+    static String syncToggleParamID[NUM_MODS];
     
-    AudioParameterFloat
-//    * freeRateParam1, * freeRateParam2,
-//    * depthParam1, * depthParam2,
-    * mixParam, * gainParam;
-//
-//    AudioParameterInt
-//    * syncRateParam1, * syncRateParam2;
-    
-    AudioParameterBool
-//    * syncFreeParam1, * syncFreeParam2,
-    * bypassParam;
-    
-    std::atomic<bool> uiUpdateData, bypassData;
+    std::atomic<bool> bypassData;
     std::atomic<float> mixData, gainData;
     std::atomic<unsigned int> interpData;
     std::array<std::atomic<float>, NUM_MODS> rateData;
     std::array<std::atomic<float>, NUM_MODS> depthData;
-    std::array<std::atomic<SYNC_OPTIONS>, NUM_MODS> syncModeData;
+    std::array<std::atomic<bool>, NUM_MODS> syncToggleData;
+    std::array<std::atomic<int>, NUM_MODS> syncModeData;
 
     //==============================================================================
     // Tempo Sync
