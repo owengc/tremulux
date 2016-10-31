@@ -40,6 +40,7 @@ gainData(0.0),
 interpData(1024),
 
 rateData(),
+rateChanged(),
 depthData(),
 syncToggleData(),
 syncModeData(),
@@ -111,6 +112,7 @@ lastTimeSigDenominator(4), lastTimeSigNumerator(4)
     for(int i = 0; i < NUM_MODS; ++i)
     {
         rateData[i].store(2 + 2 * i);
+        rateChanged[i].store(false);
         depthData[i].store(0.5);
         syncToggleData[i].store(false);
         syncModeData[i].store((SYNC_OPTIONS)(2 + i * 2));
@@ -135,7 +137,7 @@ lastTimeSigDenominator(4), lastTimeSigNumerator(4)
     
     // Depth I
     parameterManager->addParameterListener(depthParamID[0], this);
-    parameterManager->createAndAddParameter(depthParamID[0], "Oscillator II Depth", TRANS("Oscillator II Depth"),
+    parameterManager->createAndAddParameter(depthParamID[0], "Oscillator I Depth", TRANS("Oscillator I Depth"),
                                             NormalisableRange<float> (0.0, 1.0, 0), depthData[0].load(),   nullptr, nullptr);
     parameterManager->addParameterListener(depthParamID[0], this);
     
@@ -218,10 +220,12 @@ void TremuluxCore::parameterChanged(const String &parameterID, float newValue)
             if(parameterID == rateParamID[i])
             {
                 rateData[i].store(newValue);
+                rateChanged[i].store(true);
             }
             else if(parameterID == syncToggleParamID[i])
             {
                 syncToggleData[i].store(newValue);
+                rateChanged[i].store(true);
             }
             else if(parameterID == depthParamID[i])
             {
@@ -326,7 +330,7 @@ void TremuluxCore::prepareToPlay (double sr, int samplesPerBlock)
             mods[i].start(depth, rate, 0.0);
             
             // Need to prevent aliasing artifacts
-            lowPasses[i].setCutOff(sampleRate, sampleRate * 0.25);
+            lowPasses[i].setCutOff(sampleRate, LOWPASS_CUTOFF);
         }
     }
     interpData.store(samplesPerBlock);
@@ -353,19 +357,12 @@ void TremuluxCore::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMess
     assert(numChannels <= NUM_MODS);
     
     
-    const bool isActive = !bypassData.load(),
-    isSynced = (syncModeData[0].load() || syncModeData[1].load());
-    
-    if(isSynced)
-    {
-        // at least one mod is in sync mode, check for changes in transport
-        updateTempo();
-    }
-    // Update oscillators to reflect any potential changes in gui/transport
-    updateRates();
-    
+    const bool isActive = !bypassData.load();
     if(isActive)
     {
+        // Update oscillators to reflect any potential changes in gui/transport
+        updateOscillators(interpData.load());
+        
         const float mix = mixData.load(),
         gain = 1.0 + (gainData.load() - 0.5);
         buffer.applyGain(gain);
@@ -589,29 +586,39 @@ float TremuluxCore::getUnsyncedRate(const int modID)
    return MIN_FREE_RATE + (rateData[modID].load() * ONE_BY_RATE_DIAL_RANGE) * (MAX_FREE_RATE - MIN_FREE_RATE);
 }
 
-void TremuluxCore::updateRates()
+void TremuluxCore::updateOscillators(const int interpolationLength)
 {
-    // rates should be updated at beginning of callback
-    // for thread safety
+    // Check for changes in tempo and time signature
+    updateTransportInfo();
+    
     for(int i = 0; i < NUM_MODS; ++i)
     {
-        float newRate = 0;
+        float newRate = 0, oldDepth = mods[i].getTargetAmplitude(),
+        newDepth = depthData[i].load();
+        if(newDepth != oldDepth)
+        {
+            mods[i].updateAmp(newDepth, interpolationLength);
+        }
+        
+        // If oscillator is synced...
         if(syncToggleData[i].load())
         {
             const int oldMode = syncModeData[i].load(),
                       newMode = getSyncMode(i);
-            if(oldMode != newMode)
+            if(newMode != oldMode)
             {
                 syncModeData[i].store(newMode);
 //                setParameterNotifyingHost(parameterManager->getParameter(rateParamID[i])->getParameterIndex(), newMode);
                 
             }
+            // GUI may not have changed, but tempo may have
             newRate = getSyncedRate(i);
             if(newRate > NUM_SYNC_OPTIONS * lastBPM.load())
             {
                 int* debug = nullptr;
             }
         }
+        // If oscillator is not synced...
         else
         {
             newRate = getUnsyncedRate(i);
@@ -627,13 +634,13 @@ void TremuluxCore::updateRates()
         }
         if(oldRate != newRate)
         {
-            
+    
             mods[i].updateFreq(newRate, interpData.load());
         }
     }
 }
 
-void TremuluxCore::updateTempo(const bool force)
+void TremuluxCore::updateTransportInfo(const bool force)
 {
     // Called at beginning of processBlock iff at least one oscillator is synced
     transport = getPlayHead();

@@ -122,11 +122,11 @@ protected:
     
 private:
     
-    void updateTempo(const bool force = false);
+    void updateTransportInfo(const bool force = false);
     inline int getSyncMode(const int modID);
     float getSyncedRate(const int modID);
     float getUnsyncedRate(const int modID);
-    void updateRates();
+    void updateOscillators(const int interpolationLength);
     
     //==============================================================================
 
@@ -157,6 +157,7 @@ private:
     std::atomic<float> mixData, gainData;
     std::atomic<unsigned int> interpData;
     std::array<std::atomic<float>, NUM_MODS> rateData;
+    std::array<std::atomic<bool>, NUM_MODS> rateChanged;
     std::array<std::atomic<float>, NUM_MODS> depthData;
     std::array<std::atomic<bool>, NUM_MODS> syncToggleData;
     std::array<std::atomic<int>, NUM_MODS> syncModeData;
