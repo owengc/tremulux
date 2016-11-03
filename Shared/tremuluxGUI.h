@@ -167,7 +167,7 @@ private:
     ScopedPointer<DrawableButton> saveButton;
 
     // Oscillators
-    std::array<ScopedPointer<Slider>, NUM_MODS> rateDials;
+    std::array<ScopedPointer<CustomSlider>, NUM_MODS> rateDials;
     std::array<ScopedPointer<AudioProcessorValueTreeState::SliderAttachment>, NUM_MODS> rateDialAttachments;
     std::array<ScopedPointer<Label>, NUM_MODS> rateLabels;
     std::array<ScopedPointer<DrawableButton>, NUM_MODS> syncToggleButtons;

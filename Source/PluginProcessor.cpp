@@ -63,7 +63,8 @@ lastTimeSigDenominator(4), lastTimeSigNumerator(4)
     }
 
     // Set up parameter ranges
-    NormalisableRange<float> rateRange(0, RATE_DIAL_RANGE, 0.0f);
+    NormalisableRange<float> hzRateRange(0.1, RATE_DIAL_RANGE, 0.0f, 1.5);
+    NormalisableRange<float> syncedRateRange(0, RATE_DIAL_RANGE, 1.0f);
     NormalisableRange<float> toggleRange(0.0, 1.0, 1);
     NormalisableRange<float> genericRange(0.0, 1.0, 0.0f);
 //    NormalisableRange<float> percentRange(0.0, 100.0, 0.0f);
@@ -78,8 +79,8 @@ lastTimeSigDenominator(4), lastTimeSigNumerator(4)
     // Rate I
     oscillatorID = 0;
     parameterManager->createAndAddParameter(rateParamID[oscillatorID], "Oscillator I Rate", TRANS("Oscillator I Rate"),
-                                            rateRange, rateRange.snapToLegalValue(rateData[oscillatorID].load()),
-                                            nullptr, nullptr);
+                                            hzRateRange, hzRateRange.snapToLegalValue(rateData[oscillatorID].load()),
+                                            hzValueToTextFunction, hzTextToValueFunction);
     parameterManager->addParameterListener(rateParamID[oscillatorID], this);
     
     // Tempo Sync I
@@ -100,8 +101,8 @@ lastTimeSigDenominator(4), lastTimeSigNumerator(4)
     // Rate II
     oscillatorID = 1;
     parameterManager->createAndAddParameter(rateParamID[oscillatorID], "Oscillator II Rate", TRANS("Oscillator II Rate"),
-                                            rateRange, rateRange.snapToLegalValue(rateData[oscillatorID].load()),
-                                            nullptr, nullptr);
+                                            hzRateRange, hzRateRange.snapToLegalValue(rateData[oscillatorID].load()),
+                                            hzValueToTextFunction, hzTextToValueFunction);
     parameterManager->addParameterListener(rateParamID[oscillatorID], this);
     
     // Tempo Sync II

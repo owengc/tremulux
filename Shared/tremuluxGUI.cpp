@@ -114,8 +114,8 @@ subWindow(new SubWindow(this)),
 waitFlag(nullptr),
 openButton(new DrawableButton("openButton", DrawableButton::ButtonStyle::ImageStretched)),
 saveButton(new DrawableButton("saveButton", DrawableButton::ButtonStyle::ImageStretched)),
-rateDials{{new Slider(Slider::SliderStyle::RotaryHorizontalVerticalDrag, Slider::TextEntryBoxPosition::NoTextBox),
-    new Slider(Slider::SliderStyle::RotaryHorizontalVerticalDrag, Slider::TextEntryBoxPosition::NoTextBox)}},
+rateDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag, utilities::hzValueToTextFunction, utilities::hzTextToValueFunction),
+    new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag, utilities::hzValueToTextFunction, utilities::hzTextToValueFunction)}},
 rateDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(),
                                                                         TremuluxCore::rateParamID[0], *rateDials[0]),
     new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(),
@@ -188,8 +188,14 @@ gainLabel(new Label("gain", TRANS("gain")))
     // Oscillator I Controls
     oscillatorID = 0;
     addAndMakeVisible(rateDials[oscillatorID]);
-    rateDials[oscillatorID]->setBounds(RATE_X, OSCILLATOR1_Y, RATE_D, RATE_D + LABEL_H);
-    rateDials[oscillatorID]->setTextBoxStyle(Slider::TextBoxBelow, false, RATELABEL_W, LABEL_H);
+    rateDials[oscillatorID]->setBounds(RATE_X, OSCILLATOR1_Y, RATE_D, RATE_D);
+    label = rateDials[oscillatorID]->getTextBox();
+    addAndMakeVisible(label);
+    label->setBounds(RATE_X, OSCILLATOR1_Y + RATE_D, RATE_D, LABEL_H);
+    label->setJustificationType(juce::Justification::centred);
+    label->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
+    label->setText(rateDials[oscillatorID]->getTextFromValue(rateDials[oscillatorID]->getValue()), dontSendNotification);
+    
     addAndMakeVisible(rateLabels[oscillatorID]);
     rateLabels[oscillatorID]->setBounds(RATELABEL_X, OSCILLATORLABEL1_Y, RATE_D, LABEL_H);
     rateLabels[oscillatorID]->setJustificationType(juce::Justification::centred);
@@ -221,8 +227,14 @@ gainLabel(new Label("gain", TRANS("gain")))
     // Oscillator II Controls
     oscillatorID = 1;
     addAndMakeVisible(rateDials[oscillatorID]);
-    rateDials[oscillatorID]->setBounds(RATE_X, OSCILLATOR2_Y, GAIN_D, GAIN_D + LABEL_H);
-    rateDials[oscillatorID]->setTextBoxStyle(Slider::TextBoxBelow, false, RATELABEL_W, LABEL_H);
+    rateDials[oscillatorID]->setBounds(RATE_X, OSCILLATOR2_Y, GAIN_D, GAIN_D);
+    label = rateDials[oscillatorID]->getTextBox();
+    addAndMakeVisible(label);
+    label->setBounds(RATE_X, OSCILLATOR2_Y + RATE_D, RATE_D, LABEL_H);
+    label->setJustificationType(juce::Justification::centred);
+    label->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
+    label->setText(rateDials[oscillatorID]->getTextFromValue(rateDials[oscillatorID]->getValue()), dontSendNotification);
+    
     addAndMakeVisible(rateLabels[oscillatorID]);
     rateLabels[oscillatorID]->setBounds(RATELABEL_X, OSCILLATORLABEL2_Y, RATE_D, LABEL_H);
     rateLabels[oscillatorID]->setJustificationType(juce::Justification::centred);
