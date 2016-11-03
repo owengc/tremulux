@@ -30,22 +30,22 @@ class TremuluxCore  : public AudioProcessor, public AudioProcessorValueTreeState
 public:
     friend class TremuluxGUI;
     
-    typedef enum {
-        TWO_BARS = 0,
-        ONE_BAR,
-        HALF,
-        DOTTED_QUARTER,
-        QUARTER,
-        TRIPLET_QUARTER,
-        DOTTED_EIGHTH,
-        EIGHTH,
-        TRIPLET_EIGHTH,
-        DOTTED_SIXTEENTH,
-        SIXTEENTH,
-        TRIPLET_SIXTEENTH,
-        
-        NUM_SYNC_OPTIONS
-    } SYNC_OPTIONS;
+//    typedef enum {
+//        TWO_BARS = 0,
+//        ONE_BAR,
+//        HALF,
+//        DOTTED_QUARTER,
+//        QUARTER,
+//        TRIPLET_QUARTER,
+//        DOTTED_EIGHTH,
+//        EIGHTH,
+//        TRIPLET_EIGHTH,
+//        DOTTED_SIXTEENTH,
+//        SIXTEENTH,
+//        TRIPLET_SIXTEENTH,
+//        
+//        NUM_SYNC_OPTIONS
+//    } SYNC_OPTIONS;
     
     const float RATE_DIAL_RANGE = NUM_SYNC_OPTIONS - 1;
     const float ONE_BY_RATE_DIAL_RANGE = 1.0 / RATE_DIAL_RANGE;
@@ -106,8 +106,6 @@ public:
     void setGUI(TremuluxGUI* frontend);
     void clear();
     
-    StringArray syncModeLabels;
-    
     //==============================================================================
 
     void serialize(XmlElement& xml);
@@ -122,7 +120,7 @@ protected:
     
 private:
     
-    void updateTransportInfo(const bool force = false);
+    bool updateTransportInfo(const bool force = false);
     inline int getSyncMode(const int modID);
     float getSyncedRate(const int modID);
     float getUnsyncedRate(const int modID);
@@ -167,7 +165,6 @@ private:
     
     AudioPlayHead *transport;
     juce::AudioPlayHead::CurrentPositionInfo transportInfo;
-    std::array<float, NUM_SYNC_OPTIONS> syncFactors;
     std::atomic<float> lastBPM;
     std::atomic<unsigned int> lastTimeSigDenominator, lastTimeSigNumerator;
     

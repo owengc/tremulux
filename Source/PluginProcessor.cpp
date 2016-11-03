@@ -12,6 +12,8 @@
 #include "PluginEditor.h"
 #include "tremuluxGUI.h"
 
+
+
 //==============================================================================
 String TremuluxCore::mixParamID("mix");
 String TremuluxCore::bypassParamID("bypass");
@@ -19,6 +21,7 @@ String TremuluxCore::gainParamID("gain");
 String TremuluxCore::rateParamID[2]{"rate1", "rate2"};
 String TremuluxCore::depthParamID[2]{"depth1", "depth2"};
 String TremuluxCore::syncToggleParamID[2]{"syncToggle1", "syncToggle2"};
+
 
 TremuluxCore::TremuluxCore() :
 logFile(APPDIR_PATH + "/tremuluxLog.txt"),
@@ -45,70 +48,11 @@ depthData(),
 syncToggleData(),
 syncModeData(),
       
-syncFactors(),
 lastBPM(120),
 lastTimeSigDenominator(4), lastTimeSigNumerator(4)
 {
     ////////////////
     // Tempo Syncing
-    for(int i = 0; i < NUM_SYNC_OPTIONS; i++)
-    {
-        SYNC_OPTIONS option = (SYNC_OPTIONS)i;
-        switch(option)
-        {
-            case TWO_BARS:
-                syncModeLabels.add("Two Bars");
-                syncFactors[TWO_BARS] = 0.0;
-                break;
-            case ONE_BAR:
-                syncModeLabels.add("One Bar");
-                syncFactors[ONE_BAR] = 0.0;
-                break;
-            case HALF:
-                syncModeLabels.add("1/2");
-                syncFactors[HALF] = 1.0 / 120;
-                break;
-            case DOTTED_QUARTER:
-                syncModeLabels.add("Dotted 1/4");
-                syncFactors[DOTTED_QUARTER] = 1.0 / 90;
-                break;
-            case QUARTER:
-                syncModeLabels.add("1/4");
-                syncFactors[QUARTER] = 1.0 / 60.0;
-                break;
-            case TRIPLET_QUARTER:
-                syncModeLabels.add("1/4 Triplet");
-                syncFactors[TRIPLET_QUARTER] = 1.0 / 40.0;
-                break;
-            case DOTTED_EIGHTH:
-                syncModeLabels.add("Dotted 1/8");
-                syncFactors[DOTTED_EIGHTH] = 1.0 / 45.0;
-                break;
-            case EIGHTH:
-                syncModeLabels.add("1/8");
-                syncFactors[EIGHTH] = 1.0 / 30.0;
-                break;
-            case TRIPLET_EIGHTH:
-                syncModeLabels.add("1/8 Triplet");
-                syncFactors[TRIPLET_EIGHTH] = 1.0 / 20.0;
-                break;
-            case DOTTED_SIXTEENTH:
-                syncModeLabels.add("Dotted 1/16");
-                syncFactors[DOTTED_SIXTEENTH] = 1.0 / 22.5;
-                break;
-            case SIXTEENTH:
-                syncModeLabels.add("1/16");
-                syncFactors[SIXTEENTH] = 1.0 / 15.0;
-                break;
-            case TRIPLET_SIXTEENTH:
-                syncModeLabels.add("1/16 Triplet");
-                syncFactors[TRIPLET_SIXTEENTH] = 1.0 / 10.0;
-                break;
-            case NUM_SYNC_OPTIONS:
-                //just here to avoid warning
-                break;
-        }
-    }
     for(int i = 0; i < NUM_MODS; ++i)
     {
         rateData[i].store(2 + 2 * i);
@@ -120,61 +64,80 @@ lastTimeSigDenominator(4), lastTimeSigNumerator(4)
 
     
     // Use a lambda I guess!
-//    std::function<String (float)> valueToTextFunction,
-//    std::function<float (const String&)> textToValueFunction)
+
+    // Set up parameter ranges
+    NormalisableRange<float> rateRange(0, RATE_DIAL_RANGE, 0.0f);
+    NormalisableRange<float> toggleRange(0.0, 1.0, 1);
+    NormalisableRange<float> genericRange(0.0, 1.0, 0.0f);
+//    NormalisableRange<float> percentRange(0.0, 100.0, 0.0f);
+//    NormalisableRange<float> unipolarPositiveDbRange(1.0, 2.0, 0.0, ,
+//                                                          bool useSymmetricSkew = false)
+    
+    // Helps to avoid bugs..
+    unsigned int oscillatorID;
+    
     //////////////////////////
     // Oscillator I Parameters
     //
     // Rate I
-    parameterManager->createAndAddParameter(rateParamID[0], "Oscillator I Rate", TRANS("Oscillator I Rate"),
-                                            NormalisableRange<float> (0, RATE_DIAL_RANGE, 0), rateData[0].load(),   nullptr, nullptr);
-    parameterManager->addParameterListener(rateParamID[0], this);
+    oscillatorID = 0;
+    parameterManager->createAndAddParameter(rateParamID[oscillatorID], "Oscillator I Rate", TRANS("Oscillator I Rate"),
+                                            rateRange, rateRange.snapToLegalValue(rateData[oscillatorID].load()),
+                                            nullptr, nullptr);
+    parameterManager->addParameterListener(rateParamID[oscillatorID], this);
     
     // Tempo Sync I
-    parameterManager->createAndAddParameter(syncToggleParamID[0], "Tempo Sync", TRANS("Tempo Sync"),
-                                            NormalisableRange<float> (0.0, 1.0, 1), syncToggleData[0].load(),   nullptr, nullptr);
-    parameterManager->addParameterListener(syncToggleParamID[0], this);
+    parameterManager->createAndAddParameter(syncToggleParamID[oscillatorID], "Tempo Sync", TRANS("Tempo Sync"),
+                                            toggleRange, toggleRange.snapToLegalValue(syncToggleData[oscillatorID].load()),
+                                            genericValueToTextFunction, genericTextToValueFunction);
+    parameterManager->addParameterListener(syncToggleParamID[oscillatorID], this);
     
     // Depth I
-    parameterManager->addParameterListener(depthParamID[0], this);
-    parameterManager->createAndAddParameter(depthParamID[0], "Oscillator I Depth", TRANS("Oscillator I Depth"),
-                                            NormalisableRange<float> (0.0, 1.0, 0), depthData[0].load(),   nullptr, nullptr);
-    parameterManager->addParameterListener(depthParamID[0], this);
-    
+    parameterManager->createAndAddParameter(depthParamID[oscillatorID], "Oscillator I Depth", TRANS("Oscillator I Depth"),
+                                            genericRange, genericRange.snapToLegalValue(depthData[oscillatorID].load()),
+                                            percentValueToTextFunction, percentTextToValueFunction);
+    parameterManager->addParameterListener(depthParamID[oscillatorID], this);
+
     ///////////////////////////
     // Oscillator II Parameters
     //
     // Rate II
-    parameterManager->createAndAddParameter(rateParamID[1], "Oscillator II Rate", TRANS("Oscillator II Rate"),
-                                            NormalisableRange<float> (0, RATE_DIAL_RANGE, 0), rateData[1].load(),   nullptr, nullptr);
-    parameterManager->addParameterListener(rateParamID[1], this);
+    oscillatorID = 1;
+    parameterManager->createAndAddParameter(rateParamID[oscillatorID], "Oscillator II Rate", TRANS("Oscillator II Rate"),
+                                            rateRange, rateRange.snapToLegalValue(rateData[oscillatorID].load()),
+                                            nullptr, nullptr);
+    parameterManager->addParameterListener(rateParamID[oscillatorID], this);
     
     // Tempo Sync II
-    parameterManager->createAndAddParameter(syncToggleParamID[1], "Tempo Sync", TRANS("Tempo Sync"),
-                                            NormalisableRange<float> (0.0, 1.0, 1), syncToggleData[1].load(),   nullptr, nullptr);
-    parameterManager->addParameterListener(syncToggleParamID[1], this);
+    parameterManager->createAndAddParameter(syncToggleParamID[oscillatorID], "Tempo Sync", TRANS("Tempo Sync"),
+                                            toggleRange, toggleRange.snapToLegalValue(syncToggleData[oscillatorID].load()),
+                                            genericValueToTextFunction, genericTextToValueFunction);
+    parameterManager->addParameterListener(syncToggleParamID[oscillatorID], this);
     
     // Depth II
-    parameterManager->addParameterListener(depthParamID[1], this);
-    parameterManager->createAndAddParameter(depthParamID[1], "Oscillator II Depth", TRANS("Oscillator II Depth"),
-                                            NormalisableRange<float> (0.0, 1.0, 0), depthData[1].load(),   nullptr, nullptr);
-    parameterManager->addParameterListener(depthParamID[1], this);
+    parameterManager->createAndAddParameter(depthParamID[oscillatorID], "Oscillator II Depth", TRANS("Oscillator II Depth"),
+                                            genericRange, genericRange.snapToLegalValue(depthData[oscillatorID].load()),
+                                            percentValueToTextFunction, percentTextToValueFunction);
+    parameterManager->addParameterListener(depthParamID[oscillatorID], this);
     ////////////////////
     // Master Parameters
     //
     // Mix
     parameterManager->createAndAddParameter(mixParamID, "Mix", TRANS("Mix"),
-                                 NormalisableRange<float> (0.0, 1.0, 0), mixData.load(),   nullptr, nullptr);
+                                 genericRange, genericRange.snapToLegalValue(mixData.load()),
+                                            percentValueToTextFunction, percentTextToValueFunction);
     parameterManager->addParameterListener(mixParamID, this);
     
     // Bypass
     parameterManager->createAndAddParameter(bypassParamID, "Bypass", TRANS("Bypass"),
-                                            NormalisableRange<float> (0.0, 1.0, 1), bypassData.load(),   nullptr, nullptr);
+                                            genericRange, genericRange.snapToLegalValue(bypassData.load()),
+                                            genericValueToTextFunction, genericTextToValueFunction);
     parameterManager->addParameterListener(bypassParamID, this);
     
     // Gain
     parameterManager->createAndAddParameter(gainParamID, "Gain", TRANS("Gain"),
-                                            NormalisableRange<float> (0.0, 1.0, 0), gainData.load(),   nullptr, nullptr);
+                                            genericRange, genericRange.snapToLegalValue(gainData.load()),
+                                            percentValueToTextFunction, percentTextToValueFunction);
     parameterManager->addParameterListener(gainParamID, this);
     
     parameterManager->state = ValueTree("Tremulux");
@@ -555,17 +518,17 @@ float TremuluxCore::getSyncedRate(const int modID)
         switch(timeSigDenominator)
         {
             case 2:
-                beat = syncFactors[HALF];
+                beat = SYNC_MODE_FACTORS[HALF];
                 break;
             case 4:
-                beat = syncFactors[QUARTER];
+                beat = SYNC_MODE_FACTORS[QUARTER];
                 break;
             case 8:
-                beat = syncFactors[SIXTEENTH];
+                beat = SYNC_MODE_FACTORS[SIXTEENTH];
                 break;
             default:
                 // This shouldn't happen
-                beat = syncFactors[EIGHTH];
+                beat = SYNC_MODE_FACTORS[EIGHTH];
                 break;
         }
         rate = beat * bpm / timeSigNumerator;
@@ -576,7 +539,7 @@ float TremuluxCore::getSyncedRate(const int modID)
     }
     else
     {
-        rate = syncFactors[mode] * bpm;
+        rate = SYNC_MODE_FACTORS[mode] * bpm;
     }
     return rate;
 }
@@ -589,12 +552,15 @@ float TremuluxCore::getUnsyncedRate(const int modID)
 void TremuluxCore::updateOscillators(const int interpolationLength)
 {
     // Check for changes in tempo and time signature
-    updateTransportInfo();
+    const bool transportChanged = updateTransportInfo();
     
     for(int i = 0; i < NUM_MODS; ++i)
     {
-        float newRate = 0, oldDepth = mods[i].getTargetAmplitude(),
+        const float oldRate = mods[i].getTargetFrequency();
+        float newRate = oldRate,
+        oldDepth = mods[i].getTargetAmplitude(),
         newDepth = depthData[i].load();
+    
         if(newDepth != oldDepth)
         {
             mods[i].updateAmp(newDepth, interpolationLength);
@@ -603,31 +569,37 @@ void TremuluxCore::updateOscillators(const int interpolationLength)
         // If oscillator is synced...
         if(syncToggleData[i].load())
         {
-            const int oldMode = syncModeData[i].load(),
-                      newMode = getSyncMode(i);
-            if(newMode != oldMode)
+            if(transportChanged || rateChanged[i])
             {
-                syncModeData[i].store(newMode);
-//                setParameterNotifyingHost(parameterManager->getParameter(rateParamID[i])->getParameterIndex(), newMode);
+                const int oldMode = syncModeData[i].load(),
+                        newMode = getSyncMode(i);
+                if(newMode != oldMode)
+                {
+                    syncModeData[i].store(newMode);
+    //                setParameterNotifyingHost(parameterManager->getParameter(rateParamID[i])->getParameterIndex(), newMode);
+                    
+                }
                 
-            }
-            // GUI may not have changed, but tempo may have
-            newRate = getSyncedRate(i);
-            if(newRate > NUM_SYNC_OPTIONS * lastBPM.load())
-            {
-                int* debug = nullptr;
+                newRate = getSyncedRate(i);
+                if(newRate > NUM_SYNC_OPTIONS * lastBPM.load())
+                {
+                    int* debug = nullptr;
+                }
             }
         }
         // If oscillator is not synced...
         else
         {
-            newRate = getUnsyncedRate(i);
-            if(newRate > NUM_SYNC_OPTIONS * lastBPM.load())
+            if(rateChanged[i])
             {
-                int* debug = nullptr;
+                newRate = getUnsyncedRate(i);
+                if(newRate > NUM_SYNC_OPTIONS * lastBPM.load())
+                {
+                    int* debug = nullptr;
+                }
             }
         }
-        const float oldRate = mods[i].getTargetFrequency();
+        
         if(newRate > NUM_SYNC_OPTIONS * lastBPM.load())
         {
             int* debug = nullptr;
@@ -640,7 +612,7 @@ void TremuluxCore::updateOscillators(const int interpolationLength)
     }
 }
 
-void TremuluxCore::updateTransportInfo(const bool force)
+bool TremuluxCore::updateTransportInfo(const bool force)
 {
     // Called at beginning of processBlock iff at least one oscillator is synced
     transport = getPlayHead();
@@ -657,7 +629,9 @@ void TremuluxCore::updateTransportInfo(const bool force)
         lastBPM.store(bpm);
         lastTimeSigDenominator.store(timeSigDenominator);
         lastTimeSigNumerator.store(timeSigNumerator);
+        return true;
     }
+    return false;
 }
 
 void TremuluxCore::serialize(XmlElement& xml)
