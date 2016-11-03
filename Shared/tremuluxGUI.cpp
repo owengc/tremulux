@@ -138,7 +138,7 @@ mixDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core->getPa
 mixLabel(new Label("mix", TRANS("mix"))),
 bypassButton(new DrawableButton("bypassButton", DrawableButton::ButtonStyle::ImageStretched)),
 bypassButtonAttachment(new AudioProcessorValueTreeState::ButtonAttachment(core->getParameterManager(), TremuluxCore::bypassParamID, *bypassButton)),
-gainDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag, utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)),
+gainDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag, utilities::dbValueToTextFunction, utilities::dbTextToValueFunction)),
 gainDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(), TremuluxCore::gainParamID, *gainDial)),
 gainLabel(new Label("gain", TRANS("gain")))
 {
@@ -156,25 +156,6 @@ gainLabel(new Label("gain", TRANS("gain")))
     //[Constructor] You can add your own custom stuff here..
 
 //    setRateDialRanges(core->RATE_DIAL_RANGE);
-    /*typedef enum {
-     OFF = 0,
-
-     TWO_BARS,
-     ONE_BAR,
-     HALF,
-     DOTTED_QUARTER,
-     QUARTER,
-     TRIPLET_QUARTER,
-     DOTTED_EIGHTH,
-     EIGHTH,
-     TRIPLET_EIGHTH,
-     DOTTED_SIXTEENTH,
-     SIXTEENTH,
-     TRIPLET_SIXTEENTH,
-
-     NUM_SYNC_OPTIONS
-     } SYNC_OPTIONS;*/
-
 
     //***************
     //** GUI Setup **
@@ -223,12 +204,14 @@ gainLabel(new Label("gain", TRANS("gain")))
                          this, this);
 
     addAndMakeVisible(depthDials[oscillatorID]);
-    depthDials[oscillatorID]->setBounds(DEPTH_X, OSCILLATOR1_Y, DEPTH_D, DEPTH_D + LABEL_H);
+    depthDials[oscillatorID]->setBounds(DEPTH_X, OSCILLATOR1_Y, DEPTH_D, DEPTH_D);
     label = depthDials[oscillatorID]->getTextBox();
     addAndMakeVisible(label);
     label->setBounds(DEPTH_X, OSCILLATOR1_Y + DEPTH_D, DEPTH_D, LABEL_H);
     label->setJustificationType(juce::Justification::centred);
     label->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
+    label->setText(depthDials[oscillatorID]->getTextFromValue(depthDials[oscillatorID]->getValue()), dontSendNotification);
+    
     addAndMakeVisible(depthLabels[oscillatorID]);
     depthLabels[oscillatorID]->setBounds(DEPTHLABEL_X, OSCILLATORLABEL1_Y, DEPTH_D, LABEL_H);
     depthLabels[oscillatorID]->setJustificationType(juce::Justification::centred);
@@ -254,12 +237,13 @@ gainLabel(new Label("gain", TRANS("gain")))
                          this, this);
 
     addAndMakeVisible(depthDials[oscillatorID]);
-    depthDials[oscillatorID]->setBounds(DEPTH_X, OSCILLATOR2_Y, DEPTH_D, DEPTH_D + LABEL_H);
+    depthDials[oscillatorID]->setBounds(DEPTH_X, OSCILLATOR2_Y, DEPTH_D, DEPTH_D);
     label = depthDials[oscillatorID]->getTextBox();
     addAndMakeVisible(label);
     label->setBounds(DEPTH_X, OSCILLATOR2_Y + DEPTH_D, DEPTH_D, LABEL_H);
     label->setJustificationType(juce::Justification::centred);
     label->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
+    label->setText(depthDials[oscillatorID]->getTextFromValue(depthDials[oscillatorID]->getValue()), dontSendNotification);
     
     addAndMakeVisible(depthLabels[oscillatorID]);
     depthLabels[oscillatorID]->setBounds(DEPTHLABEL_X, OSCILLATORLABEL2_Y, DEPTH_D, LABEL_H);
@@ -275,6 +259,7 @@ gainLabel(new Label("gain", TRANS("gain")))
     label->setBounds(MIX_X, OSCILLATOR1_Y + MIX_D, MIX_D, LABEL_H);
     label->setJustificationType(juce::Justification::centred);
     label->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
+    label->setText(mixDial->getTextFromValue(mixDial->getValue()), dontSendNotification);
     
     addAndMakeVisible(mixLabel);
     mixLabel->setBounds(MIXLABEL_X, OSCILLATORLABEL1_Y, MIX_D, LABEL_H);
@@ -290,12 +275,13 @@ gainLabel(new Label("gain", TRANS("gain")))
                          this, this);
 
     addAndMakeVisible(gainDial);
-    gainDial->setBounds(GAIN_X, OSCILLATOR2_Y, GAIN_D, GAIN_D + LABEL_H);
+    gainDial->setBounds(GAIN_X, OSCILLATOR2_Y, GAIN_D, GAIN_D);
     label = gainDial->getTextBox();
     addAndMakeVisible(label);
     label->setBounds(GAIN_X, OSCILLATOR2_Y + GAIN_D, GAIN_D, LABEL_H);
     label->setJustificationType(juce::Justification::centred);
     label->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
+    label->setText(gainDial->getTextFromValue(gainDial->getValue()), dontSendNotification);
     
     addAndMakeVisible(gainLabel);
     gainLabel->setBounds(GAINLABEL_X, OSCILLATORLABEL2_Y, GAIN_D, LABEL_H);

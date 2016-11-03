@@ -33,11 +33,11 @@ NewProjectAudioProcessorEditor::~NewProjectAudioProcessorEditor()
 //==============================================================================
 void NewProjectAudioProcessorEditor::paint (Graphics& g)
 {
-    g.fillAll (Colours::white);
-
-    g.setColour (Colours::black);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), Justification::centred, 1);
+//    g.fillAll (Colours::white);
+//
+//    g.setColour (Colours::black);
+//    g.setFont (15.0f);
+//    g.drawFittedText ("Hello World!", getLocalBounds(), Justification::centred, 1);
 }
 
 void NewProjectAudioProcessorEditor::resized()

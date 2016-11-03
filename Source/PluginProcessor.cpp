@@ -62,16 +62,12 @@ lastTimeSigDenominator(4), lastTimeSigNumerator(4)
         syncModeData[i].store((SYNC_OPTIONS)(2 + i * 2));
     }
 
-    
-    // Use a lambda I guess!
-
     // Set up parameter ranges
     NormalisableRange<float> rateRange(0, RATE_DIAL_RANGE, 0.0f);
     NormalisableRange<float> toggleRange(0.0, 1.0, 1);
     NormalisableRange<float> genericRange(0.0, 1.0, 0.0f);
 //    NormalisableRange<float> percentRange(0.0, 100.0, 0.0f);
-//    NormalisableRange<float> unipolarPositiveDbRange(1.0, 2.0, 0.0, ,
-//                                                          bool useSymmetricSkew = false)
+    NormalisableRange<float> plusSixDbRange(1.0, 2.0, 0.0);
     
     // Helps to avoid bugs..
     unsigned int oscillatorID;
@@ -136,8 +132,8 @@ lastTimeSigDenominator(4), lastTimeSigNumerator(4)
     
     // Gain
     parameterManager->createAndAddParameter(gainParamID, "Gain", TRANS("Gain"),
-                                            genericRange, genericRange.snapToLegalValue(gainData.load()),
-                                            percentValueToTextFunction, percentTextToValueFunction);
+                                            plusSixDbRange, plusSixDbRange.snapToLegalValue(gainData.load()),
+                                            dbValueToTextFunction, dbTextToValueFunction);
     parameterManager->addParameterListener(gainParamID, this);
     
     parameterManager->state = ValueTree("Tremulux");
