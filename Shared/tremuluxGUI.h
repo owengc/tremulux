@@ -150,9 +150,14 @@ private:
     ScopedPointer<CustomSlider> mixDial;
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> mixDialAttachment;
     ScopedPointer<Label> mixLabel;
+
     ScopedPointer<CustomSlider> gainDial;
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> gainDialAttachment;
     ScopedPointer<Label> gainLabel;
+
+    ScopedPointer<CustomSlider> blendDial;
+    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> blendDialAttachment;
+    ScopedPointer<Label> blendLabel;
 
 
     //////

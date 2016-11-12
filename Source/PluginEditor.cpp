@@ -8,7 +8,7 @@
   ==============================================================================
 */
 
-#include "PluginProcessor.h"
+#include "tremuluxCore.h"
 #include "PluginEditor.h"
 #include "tremuluxGUI.h"
 

@@ -18,7 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
-#include "PluginProcessor.h"
+#include "tremuluxCore.h"
 //[/Headers]
 
 #include "tremuluxGUI.h"
@@ -51,56 +51,63 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
       new AudioProcessorValueTreeState::ButtonAttachment(core->getParameterManager(),
       TremuluxCore::syncToggleParamID[1], *syncToggleButtons[1])}},
       hzRateDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-      Rectangle<int>(RATE_X, OSCILLATOR1_Y, RATE_D, RATE_D),
-      Rectangle<int>(RATE_X, OSCILLATOR1_Y + RATE_D, RATE_D, LABEL_H), VALUE_TEXT,
+      Rectangle<int>(RATE1_X, RATE_Y, RATE_D, RATE_D),
+      Rectangle<int>(RATE1_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,
       utilities::hzRateValueToTextFunction, utilities::hzRateTextToValueFunction),
       new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-      Rectangle<int>(RATE_X, OSCILLATOR2_Y, RATE_D, RATE_D),
-      Rectangle<int>(RATE_X, OSCILLATOR2_Y + RATE_D, RATE_D, LABEL_H), VALUE_TEXT,
+      Rectangle<int>(RATE2_X, RATE_Y, RATE_D, RATE_D),
+      Rectangle<int>(RATE2_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,
       utilities::hzRateValueToTextFunction, utilities::hzRateTextToValueFunction)}},
       hzRateDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(),
       TremuluxCore::rateParamID[0], *hzRateDials[0]),
       new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(),
       TremuluxCore::rateParamID[1], *hzRateDials[1])}},
       syncedRateDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-      Rectangle<int>(RATE_X, OSCILLATOR1_Y, RATE_D, RATE_D),
-      Rectangle<int>(RATE_X, OSCILLATOR1_Y + RATE_D, RATE_D, LABEL_H), VALUE_TEXT,
+      Rectangle<int>(RATE1_X, RATE_Y, RATE_D, RATE_D),
+      Rectangle<int>(RATE1_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,
       utilities::syncedRateValueToTextFunction, utilities::syncedRateTextToValueFunction),
       new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-      Rectangle<int>(RATE_X, OSCILLATOR2_Y, RATE_D, RATE_D),
-      Rectangle<int>(RATE_X, OSCILLATOR2_Y + RATE_D, RATE_D, LABEL_H), VALUE_TEXT,
+      Rectangle<int>(RATE2_X, RATE_Y, RATE_D, RATE_D),
+      Rectangle<int>(RATE2_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,
       utilities::syncedRateValueToTextFunction, utilities::syncedRateTextToValueFunction)}},
       syncedRateDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(),
       TremuluxCore::syncModeParamID[0], *syncedRateDials[0]),
       new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(),
       TremuluxCore::syncModeParamID[1], *syncedRateDials[1])}},
-      rateLabels{{new Label("rateLabel1", TRANS("rate")), new Label("rateLabel2", TRANS("rate"))}},
+      rateLabels{{new Label("rate I", TRANS("rate I")), new Label("rate II", TRANS("rate II"))}},
       depthDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-      Rectangle<int>(DEPTH_X, OSCILLATOR1_Y, DEPTH_D, DEPTH_D),
-      Rectangle<int>(DEPTH_X, OSCILLATOR1_Y + DEPTH_D, DEPTH_D, LABEL_H), VALUE_TEXT,
+      Rectangle<int>(DEPTH1_X, DEPTH_Y, DEPTH_D, DEPTH_D),
+      Rectangle<int>(DEPTH1_X, DEPTHVALUE_Y, DEPTH_D, LABEL_H), VALUE_TEXT,
       utilities::percentValueToTextFunction, utilities::percentTextToValueFunction),
       new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-      Rectangle<int>(DEPTH_X, OSCILLATOR2_Y, DEPTH_D, DEPTH_D),
-      Rectangle<int>(DEPTH_X, OSCILLATOR2_Y + DEPTH_D, DEPTH_D, LABEL_H), VALUE_TEXT,
+      Rectangle<int>(DEPTH2_X, DEPTH_Y, DEPTH_D, DEPTH_D),
+      Rectangle<int>(DEPTH2_X, DEPTHVALUE_Y, DEPTH_D, LABEL_H), VALUE_TEXT,
       utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)}},
       depthDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(),
       TremuluxCore::depthParamID[0], *depthDials[0]), new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(),
       TremuluxCore::depthParamID[1], *depthDials[1])}},
-      depthLabels{{new Label("depth", TRANS("depth")), new Label("depth", TRANS("depth"))}},
+      depthLabels{{new Label("depth I", TRANS("depth I")), new Label("depth II", TRANS("depth II"))}},
       mixDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-      Rectangle<int>(MIX_X, OSCILLATOR1_Y, MIX_D, MIX_D),
-      Rectangle<int>(MIX_X, OSCILLATOR1_Y + MIX_D, MIX_D, LABEL_H),
+      Rectangle<int>(MIX_X, MIX_Y, MIX_D, MIX_D),
+      Rectangle<int>(MIX_X, MIXVALUE_Y, MIX_D, LABEL_H),
       VALUE_TEXT,
       utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)),
       mixDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(), TremuluxCore::mixParamID, *mixDial)),
       mixLabel(new Label("mix", TRANS("mix"))),
       gainDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-      Rectangle<int>(GAIN_X, OSCILLATOR2_Y, GAIN_D, GAIN_D),
-      Rectangle<int>(GAIN_X, OSCILLATOR2_Y + GAIN_D, GAIN_D, LABEL_H),
+      Rectangle<int>(GAIN_X, GAIN_Y, GAIN_D, GAIN_D),
+      Rectangle<int>(GAIN_X, GAINVALUE_Y, GAIN_D, LABEL_H),
       VALUE_TEXT,
       utilities::dbValueToTextFunction, utilities::dbTextToValueFunction)),
       gainDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(), TremuluxCore::gainParamID, *gainDial)),
-      gainLabel(new Label("gain", TRANS("gain")))
+      gainLabel(new Label("gain", TRANS("gain"))),
+      blendDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,
+      Rectangle<int>(BLEND_X, BLEND_Y, BLEND_D, BLEND_D),
+      Rectangle<int>(BLEND_X, BLENDVALUE_Y, BLEND_D, LABEL_H),
+      VALUE_TEXT,
+      utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)),
+      blendDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core->getParameterManager(), TremuluxCore::blendParamID, *blendDial)),
+      blendLabel(new Label("blend", TRANS("blend")))
 {
     //[Constructor_pre] You can add your own custom stuff here..
     LookAndFeel::setDefaultLookAndFeel(&lookAndFeel);
@@ -110,7 +117,7 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
     //[UserPreSize]
     //[/UserPreSize]
 
-    setSize (456, 384);
+    setSize (480, 372);
 
 
     //[Constructor] You can add your own custom stuff here..
@@ -147,8 +154,8 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
     // Oscillator Controls
     for(int oscillatorID = 0; oscillatorID < NUM_MODS; ++oscillatorID)
     {
-        const int labelY = (oscillatorID == 0)? OSCILLATORLABEL1_Y : OSCILLATORLABEL2_Y,
-        buttonY = (oscillatorID == 0)? SYNC1_Y : SYNC2_Y;
+        const int labelX = (oscillatorID == 0)? OSCILLATOR1_X : OSCILLATOR2_X,
+                 syncX = (oscillatorID == 0)? SYNC1_X : SYNC2_X;
 
         syncToggleButtons[oscillatorID]->setToggleState(core->syncToggleData[oscillatorID].load(), dontSendNotification);
 
@@ -164,32 +171,38 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
         syncedRateDials[oscillatorID]->setVelocityModeParameters(LOW_VELOCITY_SENSITIVITY);
         syncedRateDials[oscillatorID]->setScrollWheelEnabled(false);
 
-        displayRateDial(oscillatorID, syncToggleButtons[oscillatorID]->getToggleState());
-
+        // Rate label
         addAndMakeVisible(rateLabels[oscillatorID]);
-        rateLabels[oscillatorID]->setBounds(RATELABEL_X, labelY, RATE_D, LABEL_H);
+        rateLabels[oscillatorID]->setBounds(labelX, RATELABEL_Y, RATE_D, LABEL_H);
         rateLabels[oscillatorID]->setJustificationType(juce::Justification::centred);
         rateLabels[oscillatorID]->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
         rateLabels[oscillatorID]->setEditable(false);
+
+        displayRateDial(oscillatorID, syncToggleButtons[oscillatorID]->getToggleState());
 
         // Tempo sync button
         addAndPositionButton("Tempo Sync", syncToggleButtons[oscillatorID], true,
                              Resources::icon_tempo_normal_svg, Resources::icon_tempo_normal_svgSize,
                              Resources::icon_tempo_over_svg, Resources::icon_tempo_over_svgSize,
                              Resources::icon_tempo_down_svg, Resources::icon_tempo_down_svgSize,
-                             SYNC_X, buttonY, M_SIZE, M_SIZE,
+                             syncX, SYNC_Y, SYNC_D, SYNC_D,
                              this, this);
 
         // Depth dial
         addAndMakeVisible(depthDials[oscillatorID]);
         addAndMakeVisible(depthDials[oscillatorID]->getTextBox());
 
+        // Depth label
         addAndMakeVisible(depthLabels[oscillatorID]);
-        depthLabels[oscillatorID]->setBounds(DEPTHLABEL_X, labelY, DEPTH_D, LABEL_H);
+        depthLabels[oscillatorID]->setBounds(labelX, DEPTHLABEL_Y, DEPTH_D, LABEL_H);
         depthLabels[oscillatorID]->setJustificationType(juce::Justification::centred);
         depthLabels[oscillatorID]->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
         depthLabels[oscillatorID]->setEditable(false);
+
+
     }
+
+
 
     //////////////////
     // Master Controls
@@ -205,7 +218,7 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
 //    label->setText(mixDial->getTextFromValue(mixDial->getValue()), dontSendNotification);
 
     addAndMakeVisible(mixLabel);
-    mixLabel->setBounds(MIXLABEL_X, OSCILLATORLABEL1_Y, MIX_D, LABEL_H);
+    mixLabel->setBounds(MIX_X, MIXLABEL_Y, MIX_D, LABEL_H);
     mixLabel->setJustificationType(juce::Justification::centred);
     mixLabel->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
     mixLabel->setEditable(false);
@@ -215,9 +228,9 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
                          Resources::icon_power_normal_svg, Resources::icon_power_normal_svgSize,
                          Resources::icon_power_over_svg, Resources::icon_power_over_svgSize,
                          Resources::icon_power_down_svg, Resources::icon_power_down_svgSize,
-                         BYPASS_X, BYPASS_Y, M_SIZE, M_SIZE,
+                         BYPASS_X, BYPASS_Y, BYPASS_D, BYPASS_D,
                          this, this, true);
-    bypassButton->setToggleState(!core->bypassData.load(), dontSendNotification);
+    bypassButton->setToggleState(core->bypassData.load(), dontSendNotification);
 
     // Gain dial
     addAndMakeVisible(gainDial);
@@ -225,10 +238,21 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
     addAndMakeVisible(gainDial->getTextBox());
 
     addAndMakeVisible(gainLabel);
-    gainLabel->setBounds(GAINLABEL_X, OSCILLATORLABEL2_Y, GAIN_D, LABEL_H);
+    gainLabel->setBounds(GAIN_X, GAINLABEL_Y, GAIN_D, LABEL_H);
     gainLabel->setJustificationType(juce::Justification::centred);
     gainLabel->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
     gainLabel->setEditable(false);
+
+    // Blend dial
+    addAndMakeVisible(blendDial);
+    blendDial->getTextBox()->setText(percentValueToTextFunction(blendDial->getValue()), dontSendNotification);
+    addAndMakeVisible(blendDial->getTextBox());
+
+    addAndMakeVisible(blendLabel);
+    blendLabel->setBounds(BLEND_X, BLENDLABEL_Y, BLEND_D, LABEL_H);
+    blendLabel->setJustificationType(juce::Justification::centred);
+    blendLabel->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
+    blendLabel->setEditable(false);
 
     ////////////////////////////////////////////
     // Curtain (appears while editing ...)
@@ -277,13 +301,16 @@ void TremuluxGUI::paint (Graphics& g)
     g.fillAll (Colour (0xff1a1a1a));
 
     g.setColour (Colour (0x33564b44));
-    g.fillRoundedRectangle (24.0f, 48.0f, 408.0f, 312.0f, 3.000f);
+    g.fillRoundedRectangle (24.0f, 48.0f, 432.0f, 303.0f, 3.000f);
 
     g.setColour (Colour (0x33564b44));
-    g.fillRect (27, 51, 402, 306);
+    g.fillRect (27, 51, 426, 297);
 
     g.setColour (Colour (0xffffde00));
-    g.fillRect (0, 24, 338, 2);
+    g.drawRoundedRectangle (48.0f, 72.0f, 252.0f, 252.0f, 3.000f, 1.000f);
+
+    g.setColour (Colour (0xffffde00));
+    g.fillRect (0, 24, 362, 2);
 
     g.setColour (Colour (0xffffde00));
     g.fillRect (0, 0, 144, 24);
@@ -297,20 +324,17 @@ void TremuluxGUI::paint (Graphics& g)
     g.setColour (Colour (0xffffde00));
     g.setFont (Font ("Myriad Pro", 18.00f, Font::bold));
     g.drawText (TRANS("( TREMULUX"),
-                336, 8, 96, 36,
+                360, 8, 96, 36,
                 Justification::centredRight, true);
 
-    g.setColour (Colour (0xfff1de00));
-    g.drawRoundedRectangle (48.0f, 72.0f, 252.0f, 120.0f, 3.000f, 1.000f);
-
     g.setColour (Colour (0xffffde00));
-    g.drawRoundedRectangle (324.0f, 72.0f, 84.0f, 263.0f, 3.000f, 1.000f);
+    g.drawRoundedRectangle (324.0f, 72.0f, 108.0f, 252.0f, 3.000f, 1.000f);
 
     g.setColour (Colours::grey);
-    g.fillEllipse (156.0f, 116.0f, 36.0f, 36.0f);
+    g.fillEllipse (84.0f, 180.0f, 36.0f, 36.0f);
 
     g.setColour (Colours::grey);
-    g.fillEllipse (348.0f, 186.0f, 36.0f, 36.0f);
+    g.fillEllipse (360.0f, 180.0f, 36.0f, 36.0f);
 
     g.setColour (Colour (0xff515151));
     g.setFont (Font ("Myriad Pro", 12.00f, Font::bold));
@@ -318,15 +342,12 @@ void TremuluxGUI::paint (Graphics& g)
                 24, 4, 48, 22,
                 Justification::centredLeft, true);
 
-    g.setColour (Colour (0xffffde00));
-    g.drawRoundedRectangle (48.0f, 216.0f, 252.0f, 120.0f, 3.000f, 1.000f);
-
     g.setColour (Colours::grey);
-    g.fillEllipse (156.0f, 260.0f, 36.0f, 36.0f);
+    g.fillEllipse (228.0f, 180.0f, 36.0f, 36.0f);
 
     //[UserPaint] Add your own custom painting code here..
     //DEBUG
-//    debugOutline(g, this, Colours::chartreuse, "topLeft");
+//    debugOutline(g, blendDial, Colours::chartreuse, "topLeft");
     //[/UserPaint]
 }
 
@@ -812,35 +833,27 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="TremuluxGUI" componentName=""
                  parentClasses="public Component, public Timer, public ModalComponentManager, public ActionListener, private DrawableButton::Listener, private Slider::Listener, private ComboBox::Listener, public LabelListener"
-                 constructorParams="TremuluxCore* backend" variableInitialisers="core(backend),&#10;lookAndFeel(TREMULUX_THEME),&#10;curtain(new Curtain(this)),&#10;subWindow(new SubWindow(this)),&#10;waitFlag(nullptr),&#10;openButton(new DrawableButton(&quot;openButton&quot;, DrawableButton::ButtonStyle::ImageStretched)),&#10;saveButton(new DrawableButton(&quot;saveButton&quot;, DrawableButton::ButtonStyle::ImageStretched)),&#10;bypassButton(new DrawableButton(&quot;bypassButton&quot;, DrawableButton::ButtonStyle::ImageStretched)),&#10;bypassButtonAttachment(new AudioProcessorValueTreeState::ButtonAttachment(core-&gt;getParameterManager(), TremuluxCore::bypassParamID, *bypassButton)),&#10;syncToggleButtons{{new DrawableButton(&quot;syncFreeButton1&quot;, DrawableButton::ButtonStyle::ImageStretched),&#10;    new DrawableButton(&quot;syncFreeButton2&quot;, DrawableButton::ButtonStyle::ImageStretched)}},&#10;syncToggleButtonAttachments{{new AudioProcessorValueTreeState::ButtonAttachment(core-&gt;getParameterManager(),&#10;                                                                                TremuluxCore::syncToggleParamID[0], *syncToggleButtons[0]),&#10;    new AudioProcessorValueTreeState::ButtonAttachment(core-&gt;getParameterManager(),&#10;                                                       TremuluxCore::syncToggleParamID[1], *syncToggleButtons[1])}},&#10;hzRateDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;                              Rectangle&lt;int&gt;(RATE_X, OSCILLATOR1_Y, RATE_D, RATE_D),&#10;                              Rectangle&lt;int&gt;(RATE_X, OSCILLATOR1_Y + RATE_D, RATE_D, LABEL_H), VALUE_TEXT,&#10;                              utilities::hzRateValueToTextFunction, utilities::hzRateTextToValueFunction),&#10;    new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;                     Rectangle&lt;int&gt;(RATE_X, OSCILLATOR2_Y, RATE_D, RATE_D),&#10;                     Rectangle&lt;int&gt;(RATE_X, OSCILLATOR2_Y + RATE_D, RATE_D, LABEL_H), VALUE_TEXT,&#10;                     utilities::hzRateValueToTextFunction, utilities::hzRateTextToValueFunction)}},&#10;hzRateDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;                                                                          TremuluxCore::rateParamID[0], *hzRateDials[0]),&#10;    new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;                                                       TremuluxCore::rateParamID[1], *hzRateDials[1])}},&#10;syncedRateDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;                                  Rectangle&lt;int&gt;(RATE_X, OSCILLATOR1_Y, RATE_D, RATE_D),&#10;                                  Rectangle&lt;int&gt;(RATE_X, OSCILLATOR1_Y + RATE_D, RATE_D, LABEL_H), VALUE_TEXT,&#10;                                  utilities::syncedRateValueToTextFunction, utilities::syncedRateTextToValueFunction),&#10;    new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;                     Rectangle&lt;int&gt;(RATE_X, OSCILLATOR2_Y, RATE_D, RATE_D),&#10;                     Rectangle&lt;int&gt;(RATE_X, OSCILLATOR2_Y + RATE_D, RATE_D, LABEL_H), VALUE_TEXT,&#10;                     utilities::syncedRateValueToTextFunction, utilities::syncedRateTextToValueFunction)}},&#10;syncedRateDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;                                                                              TremuluxCore::syncModeParamID[0], *syncedRateDials[0]),&#10;    new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;                                                       TremuluxCore::syncModeParamID[1], *syncedRateDials[1])}},&#10;&#10;rateLabels{{new Label(&quot;rateLabel1&quot;, TRANS(&quot;rate&quot;)), new Label(&quot;rateLabel2&quot;, TRANS(&quot;rate&quot;))}},&#10;depthDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;                             Rectangle&lt;int&gt;(DEPTH_X, OSCILLATOR1_Y, DEPTH_D, DEPTH_D),&#10;                             Rectangle&lt;int&gt;(DEPTH_X, OSCILLATOR1_Y + DEPTH_D, DEPTH_D, LABEL_H), VALUE_TEXT,&#10;                             utilities::percentValueToTextFunction, utilities::percentTextToValueFunction),&#10;    new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;                     Rectangle&lt;int&gt;(DEPTH_X, OSCILLATOR2_Y, DEPTH_D, DEPTH_D),&#10;                     Rectangle&lt;int&gt;(DEPTH_X, OSCILLATOR2_Y + DEPTH_D, DEPTH_D, LABEL_H), VALUE_TEXT,&#10;                     utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)}},&#10;depthDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;                                                                         TremuluxCore::depthParamID[0], *depthDials[0]), new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;                                                                                                                                                                            TremuluxCore::depthParamID[1], *depthDials[1])}},&#10;depthLabels{{new Label(&quot;depth&quot;, TRANS(&quot;depth&quot;)), new Label(&quot;depth&quot;, TRANS(&quot;depth&quot;))}},&#10;mixDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;                         Rectangle&lt;int&gt;(MIX_X, OSCILLATOR1_Y, MIX_D, MIX_D),&#10;                         Rectangle&lt;int&gt;(MIX_X, OSCILLATOR1_Y + MIX_D, MIX_D, LABEL_H),&#10;                         VALUE_TEXT,&#10;                         utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)),&#10;mixDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(), TremuluxCore::mixParamID, *mixDial)),&#10;mixLabel(new Label(&quot;mix&quot;, TRANS(&quot;mix&quot;))),&#10;gainDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;                          Rectangle&lt;int&gt;(GAIN_X, OSCILLATOR2_Y, GAIN_D, GAIN_D),&#10;                          Rectangle&lt;int&gt;(GAIN_X, OSCILLATOR2_Y + GAIN_D, GAIN_D, LABEL_H),&#10;                          VALUE_TEXT,&#10;                          utilities::dbValueToTextFunction, utilities::dbTextToValueFunction)),&#10;gainDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(), TremuluxCore::gainParamID, *gainDial)),&#10;gainLabel(new Label(&quot;gain&quot;, TRANS(&quot;gain&quot;)))"
-                 snapPixels="12" snapActive="1" snapShown="0" overlayOpacity="0.330"
-                 fixedSize="1" initialWidth="456" initialHeight="384">
+                 constructorParams="TremuluxCore* backend" variableInitialisers="core(backend),&#10;      lookAndFeel(TREMULUX_THEME),&#10;      curtain(new Curtain(this)),&#10;      subWindow(new SubWindow(this)),&#10;      waitFlag(nullptr),&#10;      openButton(new DrawableButton(&quot;openButton&quot;, DrawableButton::ButtonStyle::ImageStretched)),&#10;      saveButton(new DrawableButton(&quot;saveButton&quot;, DrawableButton::ButtonStyle::ImageStretched)),&#10;      bypassButton(new DrawableButton(&quot;bypassButton&quot;, DrawableButton::ButtonStyle::ImageStretched)),&#10;      bypassButtonAttachment(new AudioProcessorValueTreeState::ButtonAttachment(core-&gt;getParameterManager(), TremuluxCore::bypassParamID, *bypassButton)),&#10;      syncToggleButtons{{new DrawableButton(&quot;syncFreeButton1&quot;, DrawableButton::ButtonStyle::ImageStretched),&#10;      new DrawableButton(&quot;syncFreeButton2&quot;, DrawableButton::ButtonStyle::ImageStretched)}},&#10;      syncToggleButtonAttachments{{new AudioProcessorValueTreeState::ButtonAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::syncToggleParamID[0], *syncToggleButtons[0]),&#10;      new AudioProcessorValueTreeState::ButtonAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::syncToggleParamID[1], *syncToggleButtons[1])}},&#10;      hzRateDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(RATE1_X, RATE_Y, RATE_D, RATE_D),&#10;      Rectangle&lt;int&gt;(RATE1_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,&#10;      utilities::hzRateValueToTextFunction, utilities::hzRateTextToValueFunction),&#10;      new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(RATE2_X, RATE_Y, RATE_D, RATE_D),&#10;      Rectangle&lt;int&gt;(RATE2_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,&#10;      utilities::hzRateValueToTextFunction, utilities::hzRateTextToValueFunction)}},&#10;      hzRateDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::rateParamID[0], *hzRateDials[0]),&#10;      new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::rateParamID[1], *hzRateDials[1])}},&#10;      syncedRateDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(RATE1_X, RATE_Y, RATE_D, RATE_D),&#10;      Rectangle&lt;int&gt;(RATE1_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,&#10;      utilities::syncedRateValueToTextFunction, utilities::syncedRateTextToValueFunction),&#10;      new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(RATE2_X, RATE_Y, RATE_D, RATE_D),&#10;      Rectangle&lt;int&gt;(RATE2_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,&#10;      utilities::syncedRateValueToTextFunction, utilities::syncedRateTextToValueFunction)}},&#10;      syncedRateDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::syncModeParamID[0], *syncedRateDials[0]),&#10;      new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::syncModeParamID[1], *syncedRateDials[1])}},&#10;rateLabels{{new Label(&quot;rate I&quot;, TRANS(&quot;rate I&quot;)), new Label(&quot;rate II&quot;, TRANS(&quot;rate II&quot;))}},&#10;      depthDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(DEPTH1_X, DEPTH_Y, DEPTH_D, DEPTH_D),&#10;      Rectangle&lt;int&gt;(DEPTH1_X, DEPTHVALUE_Y, DEPTH_D, LABEL_H), VALUE_TEXT,&#10;      utilities::percentValueToTextFunction, utilities::percentTextToValueFunction),&#10;      new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(DEPTH2_X, DEPTH_Y, DEPTH_D, DEPTH_D),&#10;      Rectangle&lt;int&gt;(DEPTH2_X, DEPTHVALUE_Y, DEPTH_D, LABEL_H), VALUE_TEXT,&#10;      utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)}},&#10;      depthDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::depthParamID[0], *depthDials[0]), new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::depthParamID[1], *depthDials[1])}},&#10;depthLabels{{new Label(&quot;depth I&quot;, TRANS(&quot;depth I&quot;)), new Label(&quot;depth II&quot;, TRANS(&quot;depth II&quot;))}},&#10;      mixDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(MIX_X, MIX_Y, MIX_D, MIX_D),&#10;      Rectangle&lt;int&gt;(MIX_X, MIXVALUE_Y, MIX_D, LABEL_H),&#10;      VALUE_TEXT,&#10;      utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)),&#10;      mixDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(), TremuluxCore::mixParamID, *mixDial)),&#10;      mixLabel(new Label(&quot;mix&quot;, TRANS(&quot;mix&quot;))),&#10;      gainDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(GAIN_X, GAIN_Y, GAIN_D, GAIN_D),&#10;      Rectangle&lt;int&gt;(GAIN_X, GAINVALUE_Y, GAIN_D, LABEL_H),&#10;      VALUE_TEXT,&#10;      utilities::dbValueToTextFunction, utilities::dbTextToValueFunction)),&#10;      gainDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(), TremuluxCore::gainParamID, *gainDial)),&#10;      gainLabel(new Label(&quot;gain&quot;, TRANS(&quot;gain&quot;))),&#10;      blendDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(BLEND_X, BLEND_Y, BLEND_D, BLEND_D),&#10;      Rectangle&lt;int&gt;(BLEND_X, BLENDVALUE_Y, BLEND_D, LABEL_H),&#10;      VALUE_TEXT,&#10;      utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)),&#10;      blendDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(), TremuluxCore::blendParamID, *blendDial)),&#10;      blendLabel(new Label(&quot;blend&quot;, TRANS(&quot;blend&quot;)))"
+                 snapPixels="12" snapActive="1" snapShown="1" overlayOpacity="0.330"
+                 fixedSize="1" initialWidth="480" initialHeight="372">
   <BACKGROUND backgroundColour="ff1a1a1a">
-    <ROUNDRECT pos="24 48 408 312" cornerSize="3" fill="solid: 33564b44" hasStroke="0"/>
-    <RECT pos="27 51 402 306" fill="solid: 33564b44" hasStroke="0"/>
-    <RECT pos="0 24 338 2" fill="solid: ffffde00" hasStroke="0"/>
+    <ROUNDRECT pos="24 48 432 303" cornerSize="3" fill="solid: 33564b44" hasStroke="0"/>
+    <RECT pos="27 51 426 297" fill="solid: 33564b44" hasStroke="0"/>
+    <ROUNDRECT pos="48 72 252 252" cornerSize="3" fill="solid: 0" hasStroke="1"
+               stroke="1, mitered, butt" strokeColour="solid: ffffde00"/>
+    <RECT pos="0 24 362 2" fill="solid: ffffde00" hasStroke="0"/>
     <RECT pos="0 0 144 24" fill="solid: ffffde00" hasStroke="0"/>
     <TEXT pos="24 4 48 22" fill="solid: ff84adbc" hasStroke="0" text="PRESETS"
           fontname="Myriad Pro" fontsize="12" bold="1" italic="0" justification="33"/>
-    <TEXT pos="336 8 96 36" fill="solid: ffffde00" hasStroke="0" text="( TREMULUX"
+    <TEXT pos="360 8 96 36" fill="solid: ffffde00" hasStroke="0" text="( TREMULUX"
           fontname="Myriad Pro" fontsize="18" bold="1" italic="0" justification="34"/>
-    <ROUNDRECT pos="48 72 252 120" cornerSize="3" fill="solid: 84adbc" hasStroke="1"
-               stroke="1, mitered, butt" strokeColour="solid: fff1de00"/>
-    <ROUNDRECT pos="324 72 84 263" cornerSize="3" fill="solid: 0" hasStroke="1"
+    <ROUNDRECT pos="324 72 108 252" cornerSize="3" fill="solid: 0" hasStroke="1"
                stroke="1, mitered, butt" strokeColour="solid: ffffde00"/>
-    <ELLIPSE pos="156 116 36 36" fill="solid: ff808080" hasStroke="0"/>
-    <ELLIPSE pos="348 186 36 36" fill="solid: ff808080" hasStroke="0"/>
-    <ELLIPSE pos="72 108 60 60" fill="solid: 515151" hasStroke="0"/>
-    <ELLIPSE pos="216 108 60 60" fill="solid: 515151" hasStroke="0"/>
+    <ELLIPSE pos="84 180 36 36" fill="solid: ff808080" hasStroke="0"/>
+    <ELLIPSE pos="360 180 36 36" fill="solid: ff808080" hasStroke="0"/>
     <TEXT pos="24 4 48 22" fill="solid: ff515151" hasStroke="0" text="PRESETS"
           fontname="Myriad Pro" fontsize="12" bold="1" italic="0" justification="33"/>
-    <ROUNDRECT pos="48 216 252 120" cornerSize="3" fill="solid: 0" hasStroke="1"
-               stroke="1, mitered, butt" strokeColour="solid: ffffde00"/>
-    <ELLIPSE pos="156 260 36 36" fill="solid: ff808080" hasStroke="0"/>
-    <ELLIPSE pos="72 252 60 60" fill="solid: 515151" hasStroke="0"/>
-    <ELLIPSE pos="216 252 60 60" fill="solid: 515151" hasStroke="0"/>
-    <ELLIPSE pos="336 108 60 60" fill="solid: 515151" hasStroke="0"/>
-    <ELLIPSE pos="336 252 60 60" fill="solid: 515151" hasStroke="0"/>
+    <ELLIPSE pos="228 180 36 36" fill="solid: ff808080" hasStroke="0"/>
   </BACKGROUND>
 </JUCER_COMPONENT>
 

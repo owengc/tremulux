@@ -16,9 +16,6 @@
             file="Shared/tremulux_include.cpp"/>
       <FILE id="VK3nSl" name="tremulux_include.h" compile="0" resource="0"
             file="Shared/tremulux_include.h"/>
-      <FILE id="Ql82dn" name="tremuluxCore.cpp" compile="1" resource="0"
-            file="Shared/tremuluxCore.cpp"/>
-      <FILE id="QflQRG" name="tremuluxCore.h" compile="0" resource="0" file="Shared/tremuluxCore.h"/>
     </GROUP>
     <GROUP id="{B40ECA8D-3CB0-502A-2985-78BAFA614510}" name="GUI">
       <FILE id="xg8ro6" name="tremuluxGUI.cpp" compile="1" resource="0" file="Shared/tremuluxGUI.cpp"/>
@@ -46,10 +43,9 @@
       <FILE id="FkNGGI" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="i8x6E8" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
-      <FILE id="P9TY7i" name="PluginProcessor.cpp" compile="1" resource="0"
-            file="Source/PluginProcessor.cpp"/>
-      <FILE id="qSYFsS" name="PluginProcessor.h" compile="0" resource="0"
-            file="Source/PluginProcessor.h"/>
+      <FILE id="P9TY7i" name="tremuluxCore.cpp" compile="1" resource="0"
+            file="Source/tremuluxCore.cpp"/>
+      <FILE id="qSYFsS" name="tremuluxCore.h" compile="0" resource="0" file="Source/tremuluxCore.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
