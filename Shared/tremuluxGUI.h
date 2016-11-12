@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 4.2.4
+  Created with Projucer version: 4.3.0
 
   ------------------------------------------------------------------------------
 
@@ -36,44 +36,7 @@ using namespace tremulux;
 
 class TremuluxCore;
 
-class CustomSlider : public Slider, public LabelListener
-{
-    class CustomSliderLabel : public Label, public SliderListener
-    {
-    public:
-        CustomSliderLabel(CustomSlider* slider);
-        ~CustomSliderLabel();
-        
-    private:
-        void sliderValueChanged(Slider* slider) override;
-    };
-    
-public:
-    CustomSlider();
-    CustomSlider(Slider::SliderStyle sliderStyle,
-                 std::function<String (float)> valueToText = nullptr,
-                 std::function<float (const String&)> textToValue = nullptr);
-    ~CustomSlider();
-    
-    Label* getTextBox();
-    
-    void setValueToTextFunction(std::function<String (float)> valueToText);
-    void setTextToValueFunction(std::function<float (const String&)> textToValue);
-    
-    double getValueFromText(const String& text) override;
-    String getTextFromValue(double value) override;
-    
-private:
-    ScopedPointer<CustomSliderLabel> textBox;
-    std::function<String (float)> valueToTextFunction;
-    std::function<float (const String&)> textToValueFunction;
-    
-    void labelTextChanged(Label* textBox) override;
-    void editorShown(Label* label, TextEditor& editor) override;
-    void editorHidden(Label* label, TextEditor& editor) override;
-    
-    std::atomic<bool> valueChangedViaTextbox;
-};
+
 //[/Headers]
 
 
@@ -162,27 +125,31 @@ private:
     ///////////
     // Buttons
 
-    // Preset Menu
     ScopedPointer<DrawableButton> openButton;
     ScopedPointer<DrawableButton> saveButton;
 
-    // Oscillators
-    std::array<ScopedPointer<CustomSlider>, NUM_MODS> rateDials;
-    std::array<ScopedPointer<AudioProcessorValueTreeState::SliderAttachment>, NUM_MODS> rateDialAttachments;
-    std::array<ScopedPointer<Label>, NUM_MODS> rateLabels;
+    ScopedPointer<DrawableButton> bypassButton;
+    ScopedPointer<AudioProcessorValueTreeState::ButtonAttachment> bypassButtonAttachment;
+
     std::array<ScopedPointer<DrawableButton>, NUM_MODS> syncToggleButtons;
     std::array<ScopedPointer<AudioProcessorValueTreeState::ButtonAttachment>, NUM_MODS> syncToggleButtonAttachments;
+
+    /////////////////////
+    // Sliders and Labels
+
+    std::array<ScopedPointer<CustomSlider>, NUM_MODS> hzRateDials;
+    std::array<ScopedPointer<AudioProcessorValueTreeState::SliderAttachment>, NUM_MODS> hzRateDialAttachments;
+    std::array<ScopedPointer<CustomSlider>, NUM_MODS> syncedRateDials;
+    std::array<ScopedPointer<AudioProcessorValueTreeState::SliderAttachment>, NUM_MODS> syncedRateDialAttachments;
+    std::array<ScopedPointer<Label>, NUM_MODS> rateLabels;
+
     std::array<ScopedPointer<CustomSlider>, NUM_MODS> depthDials;
     std::array<ScopedPointer<AudioProcessorValueTreeState::SliderAttachment>, NUM_MODS> depthDialAttachments;
     std::array<ScopedPointer<Label>, NUM_MODS> depthLabels;
 
-
-    // Master
     ScopedPointer<CustomSlider> mixDial;
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> mixDialAttachment;
     ScopedPointer<Label> mixLabel;
-    ScopedPointer<DrawableButton> bypassButton;
-    ScopedPointer<AudioProcessorValueTreeState::ButtonAttachment> bypassButtonAttachment;
     ScopedPointer<CustomSlider> gainDial;
     ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> gainDialAttachment;
     ScopedPointer<Label> gainLabel;
@@ -193,6 +160,8 @@ private:
     Button* lastButtonClicked;
 
     // Private Functions & Classes
+    void displayRateDial(const unsigned int oscillatorID, const bool synced);
+
     void updateButtonStates();
 
     void clearOtherToggleStates(Button* button);

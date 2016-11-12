@@ -4,11 +4,11 @@
               bundleIdentifier="com.ogc.Tremulux" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="1" buildRTAS="0" buildAAX="0"
               pluginName="Tremulux" pluginDesc="Tremulux" pluginManufacturer="ogc"
-              pluginManufacturerCode="Manu" pluginCode="Plug" pluginChannelConfigs="{1, 1}, {2, 2}"
+              pluginManufacturerCode="Manu" pluginCode="Plug" pluginChannelConfigs="{1, 1}, {1, 2}, {2, 2}"
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginSilenceInIsSilenceOut="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="TremuluxAU" pluginRTASCategory="" aaxIdentifier="com.ogc.Tremulux"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="4.2.4"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="4.3.0"
               buildAUv3="0" pluginIsMidiEffectPlugin="0">
   <MAINGROUP id="B1RSVG" name="Tremulux">
     <GROUP id="{DBBCDDFE-75BF-4BB8-4E25-5FD657964791}" name="Tremulux">
@@ -25,6 +25,9 @@
       <FILE id="s6kQqU" name="tremuluxGUI.h" compile="0" resource="0" file="Shared/tremuluxGUI.h"/>
     </GROUP>
     <GROUP id="{F794A645-D46A-95CB-87EF-26B90F409CF3}" name="Resources">
+      <FILE id="gElwhD" name="customWidgets.cpp" compile="1" resource="0"
+            file="../shared/customWidgets.cpp"/>
+      <FILE id="nKSfd7" name="customWidgets.h" compile="0" resource="0" file="../shared/customWidgets.h"/>
       <FILE id="fM6Gbn" name="flatLookAndFeel.cpp" compile="1" resource="0"
             file="../shared/flatLookAndFeel.cpp"/>
       <FILE id="CifAm2" name="flatLookAndFeel.h" compile="0" resource="0"
@@ -37,6 +40,7 @@
     <GROUP id="{95E9AEC1-4244-771A-2705-5F578DEECC3D}" name="AudioLibrary">
       <FILE id="qF6Eby" name="Filter.h" compile="0" resource="0" file="../libogc/include/Filter.h"/>
       <FILE id="n7B4Qx" name="Oscillator.h" compile="0" resource="0" file="../libogc/include/Oscillator.h"/>
+      <FILE id="mloYZN" name="RingBuffer.h" compile="0" resource="0" file="../libogc/include/RingBuffer.h"/>
     </GROUP>
     <GROUP id="{3A73246B-A72F-AD0F-5F91-18AE3E56E148}" name="Source">
       <FILE id="FkNGGI" name="PluginEditor.cpp" compile="1" resource="0"

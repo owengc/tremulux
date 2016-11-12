@@ -30,26 +30,9 @@ class TremuluxCore  : public AudioProcessor, public AudioProcessorValueTreeState
 public:
     friend class TremuluxGUI;
     
-//    typedef enum {
-//        TWO_BARS = 0,
-//        ONE_BAR,
-//        HALF,
-//        DOTTED_QUARTER,
-//        QUARTER,
-//        TRIPLET_QUARTER,
-//        DOTTED_EIGHTH,
-//        EIGHTH,
-//        TRIPLET_EIGHTH,
-//        DOTTED_SIXTEENTH,
-//        SIXTEENTH,
-//        TRIPLET_SIXTEENTH,
-//        
-//        NUM_SYNC_OPTIONS
-//    } SYNC_OPTIONS;
-    
     const float RATE_DIAL_RANGE = NUM_SYNC_OPTIONS - 1;
     const float ONE_BY_RATE_DIAL_RANGE = 1.0 / RATE_DIAL_RANGE;
-    const float MIN_FREE_RATE = 0.1, MAX_FREE_RATE = 10.0;
+    const float MIN_FREE_RATE = 0.1, MAX_FREE_RATE = 11.0;
 
     //==============================================================================
     TremuluxCore();
@@ -77,8 +60,8 @@ public:
 
     const String getInputChannelName (int channelIndex) const override;
     const String getOutputChannelName (int channelIndex) const override;
-    bool isInputChannelStereoPair (int index) const override;
-    bool isOutputChannelStereoPair (int index) const override;
+//    bool isInputChannelStereoPair (int index) const override;
+//    bool isOutputChannelStereoPair (int index) const override;
 
     bool acceptsMidi() const override;
     bool producesMidi() const override;
@@ -132,11 +115,13 @@ private:
     FileLogger logger;
     
     float sampleRate, maxModRate;
-    bool isStereo;
+    bool isStereoOutput;
+    unsigned int numInputChannels, numOutputChannels;
     
-    std::shared_ptr<Wavetable<float> > sineTable;
-    std::array<Sine<float>, NUM_MODS> mods;
-    std::array<LowPass<float>, NUM_MODS> lowPasses;
+    std::shared_ptr<Wavetable<double> > sineTable;
+    std::array<Sine<double>, NUM_MODS> mods;
+//    std::array<RecursiveFilter<double>, NUM_MODS> bandPasses;
+    std::array<RecursiveBandPass<double>, NUM_MODS> bandPasses;
     
     //==============================================================================
     // Parameters
@@ -150,6 +135,7 @@ private:
     static String rateParamID[NUM_MODS];
     static String depthParamID[NUM_MODS];
     static String syncToggleParamID[NUM_MODS];
+    static String syncModeParamID[NUM_MODS];
     
     std::atomic<bool> bypassData;
     std::atomic<float> mixData, gainData;
