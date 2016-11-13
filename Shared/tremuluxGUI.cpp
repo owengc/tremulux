@@ -395,53 +395,7 @@ void TremuluxGUI::displayRateDial(const unsigned int oscillatorID, const bool sy
 
 void TremuluxGUI::synchronizeState()
 {
-//    const unsigned int numRows = core->mappingMatrix.activeFeatures.size(),
-//    numCols = core->mappingMatrix.activeParameters.size(),
-//    numMappings = core->mappingMatrix.activeMappings.size();
-//    unsigned int r, c, activeCount = 0;
-//    bool once = true;
-//    for(r = 0; r < numRows; ++r)
-//    {
-//        auto fwp = core->mappingMatrix.getRowInfo(r);
-//        assert(!fwp.expired());
-//        mappingMatrixGUI->insertRow(fwp, true);
-//        for(c = 0; c < numCols; ++c)
-//        {
-//            if(once)
-//            {
-//                auto pwp = core->mappingMatrix.getColInfo(c);
-//                assert(!pwp.expired());
-//                mappingMatrixGUI->insertCol(pwp, true);
-//            }
-//            if(core->mappingMatrix.getMappingByRowCol(r, c).isActive())
-//            {
-//                activeCount++;
-//                mappingMatrixGUI->setCellToggleState(r, c, true);
-//            }
-//        }
-//        once = false;
-//    }
-//    jassert(activeCount == numMappings);
-//    if(core->messenger->publicSession == nullptr)
-//    {
-//        refreshDawModel();
-//    }
-//    else
-//    {
-//        if(core->messenger->publicSession != nullptr && !core->messenger->publicSession->needsUpdate.get())
-//        {
-//            mappingMatrixGUI->populateParameterMenu(*core->messenger->publicSession);
-//        }
-//    }
-//    if(!core->isEmpty())
-//    {
-//        audioRecorderPlayerGUI->import(true);
-//    }
-//    if(core->isAnalyzingStream())
-//    {
-//        bypassButton->setToggleState(true, dontSendNotification);
-//
-//    }
+
     updateButtonStates();
 }
 
@@ -472,7 +426,7 @@ void TremuluxGUI::buttonClicked (Button* button)
     if(button == bypassButton)
     {
         if(bypassButton->getToggleState())
-        {
+        {// TODO
             // disable UI elements
 //            mixDial->setEnabled(false);
 //            gainDial->setEnabled(false);
@@ -482,6 +436,45 @@ void TremuluxGUI::buttonClicked (Button* button)
         {
             // enable UI elements
         }
+    }
+    else if(button == openButton)
+    {
+        FileChooser fc("Load preset file...",
+                       File::getSpecialLocation(File::SpecialLocationType::userDocumentsDirectory),
+                       "*.tremulux",
+                       true);
+        fc.browseForFileToOpen();
+        File presetFile = fc.getResult();
+        XmlElement * xmlPreset = XmlDocument(presetFile).getDocumentElement();
+        
+        if(xmlPreset != nullptr)
+        {
+            core->deserialize(*xmlPreset);
+        }
+        else
+        {
+            AlertWindow("Invalid preset file", "The preset file you selected is not formatted correctly", AlertWindow::AlertIconType::NoIcon);
+        }
+        
+        button->setToggleState(false, juce::NotificationType::dontSendNotification);
+    }
+    else if(button == saveButton)
+    {
+        FileChooser fc("Save preset as...",
+                       File::getSpecialLocation(File::SpecialLocationType::userDocumentsDirectory),
+                       "*.tremulux",
+                       true);
+        fc.browseForFileToSave(true);
+        File presetFile = fc.getResult();
+        XmlElement xmlPreset("Tremulux");
+        core->serialize(xmlPreset);
+        
+        if(presetFile.create().wasOk())
+        {
+            xmlPreset.writeToFile(presetFile, "");
+        }
+        
+        button->setToggleState(false, juce::NotificationType::dontSendNotification);
     }
     else
     {
@@ -493,55 +486,6 @@ void TremuluxGUI::buttonClicked (Button* button)
             }
         }
     }
-//    else if(button == openButton)
-//    {
-//        //            if(audioRecorderPlayerGUI->isEmpty())
-//        //            {
-//        //                quickStart();
-//        //            }
-//        FileChooser fc("Load preset file...",
-//                       File::getSpecialLocation(File::SpecialLocationType::userDocumentsDirectory),
-//                       "*.tremulux",
-//                       true);
-//        fc.browseForFileToOpen();
-//        File presetFile = fc.getResult();
-//        XmlElement * xmlPreset = XmlDocument(presetFile).getDocumentElement();
-//
-//        if(xmlPreset != nullptr)
-//        {
-////            audioRecorderPlayerGUI->stop();
-////            core->clear();
-////            core->mappingMatrix.clear();
-////
-////            core->deserialize(*xmlPreset);
-//        }
-//        else
-//        {
-//            AlertWindow("Invalid preset file", "The preset file you selected is not formatted correctly", AlertWindow::AlertIconType::NoIcon);
-//        }
-//
-//        button->setToggleState(false, juce::NotificationType::dontSendNotification);
-//    }
-//    else if(button == saveButton)
-//    {
-//        FileChooser fc("Save preset as...",
-//                       File::getSpecialLocation(File::SpecialLocationType::userDocumentsDirectory),
-//                       "*.tremulux",
-//                       true);
-//        fc.browseForFileToSave(true);
-//        File presetFile = fc.getResult();
-//        XmlElement xmlPreset("TREMULUXNODE_PRESET");
-//        core->serialize(xmlPreset);
-//
-//        if(presetFile.create().wasOk())
-//        {
-//            xmlPreset.writeToFile(presetFile, "");
-//        }
-//
-//        button->setToggleState(false, juce::NotificationType::dontSendNotification);
-//    }
-//    lastButtonClicked = button;
-//    updateButtonStates();
 }
 
 void TremuluxGUI::editorShown (Label* textBox, TextEditor& textEditor)
@@ -735,73 +679,19 @@ void TremuluxGUI::buttonStateChanged(Button* button)
 }
 
 void TremuluxGUI::comboBoxChanged (ComboBox* box)
-{
-//    if(box == analysisComboBox)
-//    {
-//        if(shouldDisplayAnalysisData())
-//        {
-//            audioRecorderPlayerGUI->repaint();
-//        }
-//    }
-}
+{}
 
 void TremuluxGUI::updateButtonStates()
 {
-//    if(core->isAnalyzingStream())// Power button should be activated
-    {
-//        assert(bypassButton->getToggleState());
 
-    }
 }
 
 void TremuluxGUI::clearOtherToggleStates(Button* button)
 {
-//    if(button != importButton)
-//    {
-//        importButton->setToggleState(false, juce::NotificationType::dontSendNotification);
-//    }
-//    if(button != commitButton)
-//    {
-//        commitButton->setToggleState(false, juce::NotificationType::dontSendNotification);
-//    }
-//    if(button != refreshButton)
-//    {
-//        refreshButton->setToggleState(false, juce::NotificationType::dontSendNotification);
-//    }
-//    if(button != recordButton)
-//    {
-//        recordButton->setToggleState(false, juce::NotificationType::dontSendNotification);
-//    }
-//    if(button != playButton)
-//    {
-//        playButton->setToggleState(false, juce::NotificationType::dontSendNotification);
-//    }
-//    if(button != stopButton)
-//    {
-//        stopButton->setToggleState(false, juce::NotificationType::dontSendNotification);
-//    }
 }
 
 void TremuluxGUI::actionListenerCallback (const String& message)
 {
-//    if(message == "EOF")
-//    {
-//    }
-//    else if(message == "No Audio Available")
-//    {
-//    }
-//    else if(message == "Audio Available")
-//    {
-//    }
-//    else if(message == "Mapping Window Closed")
-//    {
-//        curtain->setVisible(false);
-//    }
-//    else // Ignoring unrecognized messages
-//    {
-//        return;
-//    }
-//    updateButtonStates();
 }
 
 void TremuluxGUI::alertCallback(int modalResult, String context)

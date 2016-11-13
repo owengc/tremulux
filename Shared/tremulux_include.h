@@ -37,7 +37,7 @@ namespace tremulux {
     const std::string APPDIR_PATH = File::addTrailingSeparator(File::getSpecialLocation(File::SpecialLocationType::userApplicationDataDirectory).getFullPathName()).toStdString()
     + "tremulux";
     
-    constexpr double BANDPASS_CENTER_FREQUENCY = 500;//, BANDPASS_GAIN = 10.0;
+    constexpr double BANDPASS_CENTER_FREQUENCY = 500, BANDPASS_BANDWIDTH = BANDPASS_CENTER_FREQUENCY * 0.85;
     constexpr unsigned int NUM_MODS = 2;
 //    , NUM_COEFFICIENTS = 11;
 //    
