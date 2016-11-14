@@ -242,8 +242,8 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
     gainLabel->setJustificationType(juce::Justification::centred);
     gainLabel->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
     gainLabel->setEditable(false);
-    
-    
+
+
     // Blend dial
     addAndMakeVisible(blendDial);
     blendDial->getTextBox()->setText(percentValueToTextFunction(blendDial->getValue()), dontSendNotification);
@@ -254,7 +254,7 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
     blendLabel->setJustificationType(juce::Justification::centred);
     blendLabel->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
     blendLabel->setEditable(false);
-    
+
     ////////////////////////////////////////////
     // Curtain (appears while editing ...)
 //    addAndMakeVisible(curtain);
@@ -346,6 +346,12 @@ void TremuluxGUI::paint (Graphics& g)
     g.setColour (Colours::grey);
     g.fillEllipse (228.0f, 180.0f, 36.0f, 36.0f);
 
+    g.setColour (Colour (0xff515151));
+    g.setFont (Font ("Myriad Pro", 9.00f, Font::bold));
+    g.drawText (TRANS("causal audio"),
+                406, 354, 48, 12,
+                Justification::centred, true);
+
     //[UserPaint] Add your own custom painting code here..
     //DEBUG
 //    debugOutline(g, blendDial, Colours::chartreuse, "topLeft");
@@ -432,7 +438,7 @@ void TremuluxGUI::buttonClicked (Button* button)
 //            mixDial->setEnabled(false);
 //            gainDial->setEnabled(false);
 //            blendDial->setEnabled(false);
-//            
+//
 //            for(int i = 0; i < NUM_MODS; ++i)
 //            {
 //                hzRateDials[i]->setEnabled(false);
@@ -446,7 +452,7 @@ void TremuluxGUI::buttonClicked (Button* button)
 //            mixDial->setEnabled(true);
 //            gainDial->setEnabled(true);
 //            blendDial->setEnabled(true);
-//            
+//
 //            for(int i = 0; i < NUM_MODS; ++i)
 //            {
 //                hzRateDials[i]->setEnabled(true);
@@ -465,7 +471,7 @@ void TremuluxGUI::buttonClicked (Button* button)
         fc.browseForFileToOpen();
         File presetFile = fc.getResult();
         XmlElement * xmlPreset = XmlDocument(presetFile).getDocumentElement();
-        
+
         if(xmlPreset != nullptr)
         {
             core->deserialize(*xmlPreset);
@@ -474,7 +480,7 @@ void TremuluxGUI::buttonClicked (Button* button)
         {
             AlertWindow("Invalid preset file", "The preset file you selected is not formatted correctly", AlertWindow::AlertIconType::NoIcon);
         }
-        
+
         button->setToggleState(false, juce::NotificationType::dontSendNotification);
     }
     else if(button == saveButton)
@@ -487,12 +493,12 @@ void TremuluxGUI::buttonClicked (Button* button)
         File presetFile = fc.getResult();
         XmlElement xmlPreset("Tremulux");
         core->serialize(xmlPreset);
-        
+
         if(presetFile.create().wasOk())
         {
             xmlPreset.writeToFile(presetFile, "");
         }
-        
+
         button->setToggleState(false, juce::NotificationType::dontSendNotification);
     }
     else
@@ -743,7 +749,7 @@ BEGIN_JUCER_METADATA
 <JUCER_COMPONENT documentType="Component" className="TremuluxGUI" componentName=""
                  parentClasses="public Component, public Timer, public ModalComponentManager, public ActionListener, private DrawableButton::Listener, private Slider::Listener, private ComboBox::Listener, public LabelListener"
                  constructorParams="TremuluxCore* backend" variableInitialisers="core(backend),&#10;      lookAndFeel(TREMULUX_THEME),&#10;      curtain(new Curtain(this)),&#10;      subWindow(new SubWindow(this)),&#10;      waitFlag(nullptr),&#10;      openButton(new DrawableButton(&quot;openButton&quot;, DrawableButton::ButtonStyle::ImageStretched)),&#10;      saveButton(new DrawableButton(&quot;saveButton&quot;, DrawableButton::ButtonStyle::ImageStretched)),&#10;      bypassButton(new DrawableButton(&quot;bypassButton&quot;, DrawableButton::ButtonStyle::ImageStretched)),&#10;      bypassButtonAttachment(new AudioProcessorValueTreeState::ButtonAttachment(core-&gt;getParameterManager(), TremuluxCore::bypassParamID, *bypassButton)),&#10;      syncToggleButtons{{new DrawableButton(&quot;syncFreeButton1&quot;, DrawableButton::ButtonStyle::ImageStretched),&#10;      new DrawableButton(&quot;syncFreeButton2&quot;, DrawableButton::ButtonStyle::ImageStretched)}},&#10;      syncToggleButtonAttachments{{new AudioProcessorValueTreeState::ButtonAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::syncToggleParamID[0], *syncToggleButtons[0]),&#10;      new AudioProcessorValueTreeState::ButtonAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::syncToggleParamID[1], *syncToggleButtons[1])}},&#10;      hzRateDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(RATE1_X, RATE_Y, RATE_D, RATE_D),&#10;      Rectangle&lt;int&gt;(RATE1_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,&#10;      utilities::hzRateValueToTextFunction, utilities::hzRateTextToValueFunction),&#10;      new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(RATE2_X, RATE_Y, RATE_D, RATE_D),&#10;      Rectangle&lt;int&gt;(RATE2_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,&#10;      utilities::hzRateValueToTextFunction, utilities::hzRateTextToValueFunction)}},&#10;      hzRateDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::rateParamID[0], *hzRateDials[0]),&#10;      new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::rateParamID[1], *hzRateDials[1])}},&#10;      syncedRateDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(RATE1_X, RATE_Y, RATE_D, RATE_D),&#10;      Rectangle&lt;int&gt;(RATE1_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,&#10;      utilities::syncedRateValueToTextFunction, utilities::syncedRateTextToValueFunction),&#10;      new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(RATE2_X, RATE_Y, RATE_D, RATE_D),&#10;      Rectangle&lt;int&gt;(RATE2_X, RATEVALUE_Y, RATE_D, LABEL_H), VALUE_TEXT,&#10;      utilities::syncedRateValueToTextFunction, utilities::syncedRateTextToValueFunction)}},&#10;      syncedRateDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::syncModeParamID[0], *syncedRateDials[0]),&#10;      new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::syncModeParamID[1], *syncedRateDials[1])}},&#10;rateLabels{{new Label(&quot;rate I&quot;, TRANS(&quot;rate I&quot;)), new Label(&quot;rate II&quot;, TRANS(&quot;rate II&quot;))}},&#10;      depthDials{{new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(DEPTH1_X, DEPTH_Y, DEPTH_D, DEPTH_D),&#10;      Rectangle&lt;int&gt;(DEPTH1_X, DEPTHVALUE_Y, DEPTH_D, LABEL_H), VALUE_TEXT,&#10;      utilities::percentValueToTextFunction, utilities::percentTextToValueFunction),&#10;      new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(DEPTH2_X, DEPTH_Y, DEPTH_D, DEPTH_D),&#10;      Rectangle&lt;int&gt;(DEPTH2_X, DEPTHVALUE_Y, DEPTH_D, LABEL_H), VALUE_TEXT,&#10;      utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)}},&#10;      depthDialAttachments{{new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::depthParamID[0], *depthDials[0]), new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(),&#10;      TremuluxCore::depthParamID[1], *depthDials[1])}},&#10;depthLabels{{new Label(&quot;depth I&quot;, TRANS(&quot;depth I&quot;)), new Label(&quot;depth II&quot;, TRANS(&quot;depth II&quot;))}},&#10;      mixDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(MIX_X, MIX_Y, MIX_D, MIX_D),&#10;      Rectangle&lt;int&gt;(MIX_X, MIXVALUE_Y, MIX_D, LABEL_H),&#10;      VALUE_TEXT,&#10;      utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)),&#10;      mixDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(), TremuluxCore::mixParamID, *mixDial)),&#10;      mixLabel(new Label(&quot;mix&quot;, TRANS(&quot;mix&quot;))),&#10;      gainDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(GAIN_X, GAIN_Y, GAIN_D, GAIN_D),&#10;      Rectangle&lt;int&gt;(GAIN_X, GAINVALUE_Y, GAIN_D, LABEL_H),&#10;      VALUE_TEXT,&#10;      utilities::dbValueToTextFunction, utilities::dbTextToValueFunction)),&#10;      gainDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(), TremuluxCore::gainParamID, *gainDial)),&#10;      gainLabel(new Label(&quot;gain&quot;, TRANS(&quot;gain&quot;))),&#10;      blendDial(new CustomSlider(Slider::SliderStyle::RotaryHorizontalVerticalDrag,&#10;      Rectangle&lt;int&gt;(BLEND_X, BLEND_Y, BLEND_D, BLEND_D),&#10;      Rectangle&lt;int&gt;(BLEND_X, BLENDVALUE_Y, BLEND_D, LABEL_H),&#10;      VALUE_TEXT,&#10;      utilities::percentValueToTextFunction, utilities::percentTextToValueFunction)),&#10;      blendDialAttachment(new AudioProcessorValueTreeState::SliderAttachment(core-&gt;getParameterManager(), TremuluxCore::blendParamID, *blendDial)),&#10;      blendLabel(new Label(&quot;blend&quot;, TRANS(&quot;blend&quot;)))"
-                 snapPixels="12" snapActive="1" snapShown="1" overlayOpacity="0.330"
+                 snapPixels="12" snapActive="1" snapShown="0" overlayOpacity="0.330"
                  fixedSize="1" initialWidth="480" initialHeight="372">
   <BACKGROUND backgroundColour="ff1a1a1a">
     <ROUNDRECT pos="24 48 432 303" cornerSize="3" fill="solid: 33564b44" hasStroke="0"/>
@@ -763,6 +769,8 @@ BEGIN_JUCER_METADATA
     <TEXT pos="24 4 48 22" fill="solid: ff515151" hasStroke="0" text="PRESETS"
           fontname="Myriad Pro" fontsize="12" bold="1" italic="0" justification="33"/>
     <ELLIPSE pos="228 180 36 36" fill="solid: ff808080" hasStroke="0"/>
+    <TEXT pos="406 354 48 12" fill="solid: ff515151" hasStroke="0" text="causal audio"
+          fontname="Myriad Pro" fontsize="9" bold="1" italic="0" justification="36"/>
   </BACKGROUND>
 </JUCER_COMPONENT>
 
