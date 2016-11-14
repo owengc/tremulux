@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="pQX7XG" name="Tremulux" projectType="audioplug" version="1.0.0"
-              bundleIdentifier="com.ogc.Tremulux" includeBinaryInAppConfig="1"
+<JUCERPROJECT id="pQX7XG" name="tremulux" projectType="audioplug" version="1.0.0"
+              bundleIdentifier="com.causalaudio.tremulux" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="1" buildRTAS="0" buildAAX="0"
-              pluginName="Tremulux" pluginDesc="Tremulux" pluginManufacturer="ogc"
-              pluginManufacturerCode="Manu" pluginCode="Plug" pluginChannelConfigs="{1, 1}, {1, 2}, {2, 2}"
+              pluginName="tremulux" pluginDesc="tremulux" pluginManufacturer="causal audio"
+              pluginManufacturerCode="Caus" pluginCode="Trem" pluginChannelConfigs="{1, 1}, {2, 1}, {1, 2}, {2, 2}"
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginSilenceInIsSilenceOut="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="TremuluxAU" pluginRTASCategory="" aaxIdentifier="com.ogc.Tremulux"
+              pluginAUExportPrefix="TremuluxAU" pluginRTASCategory="" aaxIdentifier="com.causalaudio.Tremulux"
               pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="4.3.0"
               buildAUv3="0" pluginIsMidiEffectPlugin="0">
-  <MAINGROUP id="B1RSVG" name="Tremulux">
+  <MAINGROUP id="B1RSVG" name="tremulux">
     <GROUP id="{DBBCDDFE-75BF-4BB8-4E25-5FD657964791}" name="Tremulux">
       <FILE id="t0xjKZ" name="tremulux_include.cpp" compile="1" resource="0"
             file="Shared/tremulux_include.cpp"/>
@@ -53,10 +53,10 @@
                vst3Folder="~/SDKs/vstsdk3">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
-                       isDebug="1" optimisation="1" targetName="Tremulux" headerPath="/usr/local/include"
+                       isDebug="1" optimisation="1" targetName="tremulux" headerPath="/usr/local/include"
                        libraryPath="/usr/local/lib" cppLibType="libc++"/>
         <CONFIGURATION name="Release" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
-                       isDebug="0" optimisation="2" targetName="Tremulux" headerPath="/usr/local/include"
+                       isDebug="0" optimisation="2" targetName="tremulux" headerPath="/usr/local/include"
                        libraryPath="/usr/local/lib" cppLibType="libc++"/>
       </CONFIGURATIONS>
       <MODULEPATHS>

@@ -242,7 +242,8 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
     gainLabel->setJustificationType(juce::Justification::centred);
     gainLabel->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
     gainLabel->setEditable(false);
-
+    
+    
     // Blend dial
     addAndMakeVisible(blendDial);
     blendDial->getTextBox()->setText(percentValueToTextFunction(blendDial->getValue()), dontSendNotification);
@@ -253,7 +254,7 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
     blendLabel->setJustificationType(juce::Justification::centred);
     blendLabel->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
     blendLabel->setEditable(false);
-
+    
     ////////////////////////////////////////////
     // Curtain (appears while editing ...)
 //    addAndMakeVisible(curtain);
@@ -426,15 +427,33 @@ void TremuluxGUI::buttonClicked (Button* button)
     if(button == bypassButton)
     {
         if(bypassButton->getToggleState())
-        {// TODO
+        {
             // disable UI elements
 //            mixDial->setEnabled(false);
 //            gainDial->setEnabled(false);
-//              ...
+//            blendDial->setEnabled(false);
+//            
+//            for(int i = 0; i < NUM_MODS; ++i)
+//            {
+//                hzRateDials[i]->setEnabled(false);
+//                syncedRateDials[i]->setEnabled(false);
+//                syncToggleButtons[i]->setEnabled(false);
+//                depthDials[i]->setEnabled(false);
+//            }
         }
         else
         {
-            // enable UI elements
+//            mixDial->setEnabled(true);
+//            gainDial->setEnabled(true);
+//            blendDial->setEnabled(true);
+//            
+//            for(int i = 0; i < NUM_MODS; ++i)
+//            {
+//                hzRateDials[i]->setEnabled(true);
+//                syncedRateDials[i]->setEnabled(true);
+//                syncToggleButtons[i]->setEnabled(true);
+//                depthDials[i]->setEnabled(true);
+//            }
         }
     }
     else if(button == openButton)
