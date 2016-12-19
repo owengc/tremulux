@@ -157,10 +157,13 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
         
         // Hz rate dial
         addAndMakeVisible(hzRateDials[oscillatorID]);
+//        hzRateDials[oscillatorID]->getTextBox()->setText(hzRateValueToTextFunction(hzRateDials[oscillatorID]->getValue()), dontSendNotification);
         addAndMakeVisible(hzRateDials[oscillatorID]->getTextBox());
 
         // Synced rate dial
         addAndMakeVisible(syncedRateDials[oscillatorID]);
+//        syncedRateDials[oscillatorID]->getTextBox()->setText(syncedRateValueToTextFunction(syncedRateDials[oscillatorID]->getValue()), dontSendNotification);
+        
         addAndMakeVisible(syncedRateDials[oscillatorID]->getTextBox());
         syncedRateDials[oscillatorID]->getTextBox()->setEditable(false);
         syncedRateDials[oscillatorID]->setMouseDragSensitivity(LOW_DRAG_SENSITIVITY);
@@ -186,6 +189,7 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
 
         // Depth dial
         addAndMakeVisible(depthDials[oscillatorID]);
+//        depthDials[oscillatorID]->getTextBox()->setText(percentValueToTextFunction(depthDials[oscillatorID]->getValue()), dontSendNotification);
         addAndMakeVisible(depthDials[oscillatorID]->getTextBox());
 
         // Depth label
@@ -194,8 +198,6 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
         depthLabels[oscillatorID]->setJustificationType(juce::Justification::centred);
         depthLabels[oscillatorID]->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
         depthLabels[oscillatorID]->setEditable(false);
-
-
     }
 
 
@@ -205,14 +207,10 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
 
     // Mix dial
     addAndMakeVisible(mixDial);
-//    mixDial->setBounds(MIX_X, OSCILLATOR1_Y, MIX_D, MIX_D);
-//    label = mixDial->getTextBox();
+//    mixDial->getTextBox()->setText(percentValueToTextFunction(mixDial->getValue()), dontSendNotification);
     addAndMakeVisible(mixDial->getTextBox());
-//    label->setBounds(MIX_X, OSCILLATOR1_Y + MIX_D, MIX_D, LABEL_H);
-
-//    label->setFont(theme::getThemeFont().withPointHeight(LABEL_TEXT));
-//    label->setText(mixDial->getTextFromValue(mixDial->getValue()), dontSendNotification);
-
+    
+    
     addAndMakeVisible(mixLabel);
     mixLabel->setBounds(MIX_X, MIXLABEL_Y, MIX_D, LABEL_H);
     mixLabel->setJustificationType(juce::Justification::centred);
@@ -230,7 +228,7 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
 
     // Gain dial
     addAndMakeVisible(gainDial);
-    gainDial->getTextBox()->setText(dbValueToTextFunction(gainDial->getValue()), dontSendNotification);
+//    gainDial->getTextBox()->setText(dbValueToTextFunction(gainDial->getValue()), dontSendNotification);
     addAndMakeVisible(gainDial->getTextBox());
 
     addAndMakeVisible(gainLabel);
@@ -242,7 +240,7 @@ TremuluxGUI::TremuluxGUI (TremuluxCore* backend)
 
     // Blend dial
     addAndMakeVisible(blendDial);
-    blendDial->getTextBox()->setText(percentValueToTextFunction(blendDial->getValue()), dontSendNotification);
+//    blendDial->getTextBox()->setText(percentValueToTextFunction(blendDial->getValue()), dontSendNotification);
     addAndMakeVisible(blendDial->getTextBox());
 
     addAndMakeVisible(blendLabel);

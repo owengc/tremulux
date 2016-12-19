@@ -35,9 +35,9 @@
       <FILE id="NJSDRt" name="resources.h" compile="0" resource="0" file="../shared/ui/resources.h"/>
     </GROUP>
     <GROUP id="{95E9AEC1-4244-771A-2705-5F578DEECC3D}" name="AudioLibrary">
-      <FILE id="qF6Eby" name="Filter.h" compile="0" resource="0" file="../libogc/include/Filter.h"/>
-      <FILE id="n7B4Qx" name="Oscillator.h" compile="0" resource="0" file="../libogc/include/Oscillator.h"/>
-      <FILE id="mloYZN" name="RingBuffer.h" compile="0" resource="0" file="../libogc/include/RingBuffer.h"/>
+      <FILE id="FVluWc" name="Filter.h" compile="0" resource="0" file="../calib/include/Filter.h"/>
+      <FILE id="dHJB62" name="Oscillator.h" compile="0" resource="0" file="../calib/include/Oscillator.h"/>
+      <FILE id="S06jn4" name="RingBuffer.h" compile="0" resource="0" file="../calib/include/RingBuffer.h"/>
     </GROUP>
     <GROUP id="{3A73246B-A72F-AD0F-5F91-18AE3E56E148}" name="Source">
       <FILE id="FkNGGI" name="PluginEditor.cpp" compile="1" resource="0"
