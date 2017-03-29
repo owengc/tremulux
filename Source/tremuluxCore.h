@@ -13,8 +13,8 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "tremulux_include.h"
-#include "Filter.h"
-#include "Oscillator.h"
+#include "../../calib/include/blocks/Filter.h"
+#include "../../calib/include/blocks/Oscillator.h"
 
 
 using namespace tremulux;

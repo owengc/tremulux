@@ -23,8 +23,8 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "JuceHeader.h"
 #include "tremulux_include.h"
-#include "Oscillator.h"
-#include "Filter.h"
+#include "../../calib/include/blocks/Oscillator.h"
+#include "../../calib/include/blocks/Filter.h"
 #include <array>
 
 

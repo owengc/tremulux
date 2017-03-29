@@ -8,8 +8,9 @@
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginSilenceInIsSilenceOut="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="TremuluxAU" pluginRTASCategory="" aaxIdentifier="com.causalaudio.Tremulux"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="4.3.0"
-              buildAUv3="0" pluginIsMidiEffectPlugin="0">
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="4.3.1"
+              buildAUv3="0" pluginIsMidiEffectPlugin="0" buildStandalone="0"
+              enableIAA="0">
   <MAINGROUP id="B1RSVG" name="tremulux">
     <GROUP id="{DBBCDDFE-75BF-4BB8-4E25-5FD657964791}" name="Tremulux">
       <FILE id="t0xjKZ" name="tremulux_include.cpp" compile="1" resource="0"

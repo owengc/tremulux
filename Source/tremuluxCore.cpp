@@ -37,7 +37,7 @@ logger(logFile, "TREMULUX log", 0),
 sampleRate(0),
 maxModRate(0),
 
-sineTable(make_shared<Wavetable<double> >(Wavetable<double>::Waveform::SINE, 4194304, sampleRate)),
+sineTable(std::make_shared<Wavetable<double> >(Wavetable<double>::Waveform::SINE, 4194304, sampleRate)),
 mods{{Sine<double>(sineTable, sampleRate), Sine<double>(sineTable, sampleRate)}},
 //bandPasses{{RecursiveFilter<double>(NUM_COEFFICIENTS, BANDPASS_GAIN, NUMERATOR_COEFFICIENTS, DENOMINATOR_COEFFICIENTS),
 //    RecursiveFilter<double>(NUM_COEFFICIENTS, BANDPASS_GAIN, NUMERATOR_COEFFICIENTS, DENOMINATOR_COEFFICIENTS)}},
